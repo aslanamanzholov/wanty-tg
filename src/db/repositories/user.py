@@ -1,4 +1,5 @@
 """User repository file."""
+from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,21 +21,19 @@ class UserRepo(Repository[User]):
         self,
         user_id: int,
         user_name: str | None = None,
-        first_name: str | None = None,
-        second_name: str | None = None,
-        language_code: str | None = None,
-        is_premium: bool | None = False,
-        role: Role | None = Role.USER,
+        age: str | None = None,
+        gender: str | None = None,
+        country: str | None = None,
+        role: Optional[Role] = Role.USER,
         user_chat: type[Base] = None,
     ) -> None:
         """Insert a new user into the database.
 
         :param user_id: Telegram user id
         :param user_name: Telegram username
-        :param first_name: Telegram profile first name
-        :param second_name: Telegram profile second name
-        :param language_code: Telegram profile language code
-        :param is_premium: Telegram user premium status
+        :param age: Telegram profile first name
+        :param gender: Telegram profile second name
+        :param country: Telegram profile language code
         :param role: User's role
         :param user_chat: Telegram chat with user.
         """
@@ -42,10 +41,9 @@ class UserRepo(Repository[User]):
             User(
                 user_id=user_id,
                 user_name=user_name,
-                first_name=first_name,
-                second_name=second_name,
-                language_code=language_code,
-                is_premium=is_premium,
+                age=age,
+                gender=gender,
+                country=country,
                 role=role,
                 user_chat=user_chat,
             )

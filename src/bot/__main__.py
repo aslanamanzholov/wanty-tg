@@ -3,10 +3,13 @@ import asyncio
 import logging
 
 from aiogram import Bot
+from aiogram.types import BotCommand
 from redis.asyncio.client import Redis
 
 from src.bot.dispatcher import get_dispatcher, get_redis_storage
+from src.bot.middlewares.database_md import DatabaseMiddleware
 from src.bot.structures.data_structure import TransferData
+from src.bot.logic.bot_commands import bot_commands
 from src.configuration import conf
 from src.db.database import create_async_engine
 
@@ -23,13 +26,23 @@ async def start_bot():
             port=conf.redis.port,
         )
     )
-    dp = get_dispatcher(storage=storage)
 
+    commands_for_bot = []
+    for cmd in bot_commands:
+        commands_for_bot.append(BotCommand(command=cmd[0], description=cmd[1]))
+
+    await bot.set_my_commands(commands=commands_for_bot)
+
+    dp = get_dispatcher(storage=storage)
+    logging.debug("dp state %r", dp)
     await dp.start_polling(
         bot,
         allowed_updates=dp.resolve_used_update_types(),
         **TransferData(
-            engine=create_async_engine(url=conf.db.build_connection_str())
+            engine=create_async_engine(url=conf.db.build_connection_str()),
+            # db=dp['db'],
+            # bot=dp.bot,
+            # role="USER"
         )
     )
 

@@ -10,6 +10,7 @@ from redis.asyncio.client import Redis
 from src.configuration import conf
 
 from .logic import routers
+from .middlewares.database_md import DatabaseMiddleware
 
 
 def get_redis_storage(
@@ -42,5 +43,7 @@ def get_dispatcher(
         dp.include_router(router)
 
     # Register middlewares
+
+    dp.message.middleware(DatabaseMiddleware())
 
     return dp

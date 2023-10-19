@@ -37,9 +37,6 @@ class Repository(Generic[AbstractModel]):
     async def get_by_where(self, whereclause) -> AbstractModel | None:
         """Get an ONE model from the database with whereclause.
 
-        Todo:
-            1) https://github.com/MassonNN/masson-aiogram-template/issues/15
-
         :param whereclause: Clause by which entry will be found
         :return: Model if only one model was found, else None.
         """

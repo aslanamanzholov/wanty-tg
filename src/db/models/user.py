@@ -3,10 +3,9 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.bot.structures.role import Role
-
 from .base import Base
 from .chat import Chat
+from src.bot.structures.role import Role
 
 
 class User(Base):
@@ -19,21 +18,16 @@ class User(Base):
     user_name: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
-    """ Telegram user name """
-    first_name: Mapped[str] = mapped_column(
+    age: Mapped[int] = mapped_column(
+        sa.SmallInteger, unique=False, nullable=True
+    )
+    gender: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
-    """ Telegram profile first name """
-    second_name: Mapped[str] = mapped_column(
+    country: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
-    """ Telegram profile second name """
-    is_premium: Mapped[bool] = mapped_column(
-        sa.Boolean, unique=False, nullable=False
-    )
-    """ Telegram user premium status """
     role: Mapped[Role] = mapped_column(sa.Enum(Role), default=Role.USER)
-    """ User's role """
     user_chat_fk: Mapped[int] = mapped_column(
         sa.ForeignKey('chat.id'), unique=False, nullable=False
     )

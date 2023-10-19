@@ -19,4 +19,4 @@ class TransferData(TypedDict):
     engine: AsyncEngine
     db: Database
     bot: Bot
-    role: Role
+    # role: Role

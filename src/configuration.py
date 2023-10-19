@@ -57,7 +57,7 @@ class Configuration:
     """All in one configuration's class."""
 
     debug = bool(getenv('DEBUG'))
-    logging_level = int(getenv('LOGGING_LEVEL', logging.INFO))
+    logging_level = int(getenv('LOGGING_LEVEL', logging.DEBUG))
 
     db = DatabaseConfig()
     redis = RedisConfig()
