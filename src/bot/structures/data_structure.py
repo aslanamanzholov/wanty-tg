@@ -20,3 +20,9 @@ class TransferData(TypedDict):
     db: Database
     bot: Bot
     # role: Role
+
+
+class UserCheckRegisterTransferData(TypedDict):
+    db: Database
+    user_id: int
+    bot: Bot

@@ -1,10 +1,8 @@
 """User model file."""
 import sqlalchemy as sa
-import sqlalchemy.orm as orm
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
-from .chat import Chat
 from src.bot.structures.role import Role
 
 
@@ -28,10 +26,3 @@ class User(Base):
         sa.Text, unique=False, nullable=True
     )
     role: Mapped[Role] = mapped_column(sa.Enum(Role), default=Role.USER)
-    user_chat_fk: Mapped[int] = mapped_column(
-        sa.ForeignKey('chat.id'), unique=False, nullable=False
-    )
-    user_chat: Mapped[Chat] = orm.relationship(
-        'Chat', uselist=False, lazy='joined'
-    )
-    """ Telegram chat with user """

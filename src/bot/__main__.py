@@ -3,6 +3,7 @@ import asyncio
 import logging
 
 from aiogram import Bot
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
 from redis.asyncio.client import Redis
 
@@ -33,16 +34,12 @@ async def start_bot():
 
     await bot.set_my_commands(commands=commands_for_bot)
 
-    dp = get_dispatcher(storage=storage)
-    logging.debug("dp state %r", dp)
+    dp = get_dispatcher(storage=MemoryStorage())
     await dp.start_polling(
         bot,
         allowed_updates=dp.resolve_used_update_types(),
         **TransferData(
             engine=create_async_engine(url=conf.db.build_connection_str()),
-            # db=dp['db'],
-            # bot=dp.bot,
-            # role="USER"
         )
     )
 

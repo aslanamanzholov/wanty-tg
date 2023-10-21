@@ -18,14 +18,13 @@ class UserRepo(Repository[User]):
         super().__init__(type_model=User, session=session)
 
     async def new(
-        self,
-        user_id: int,
-        user_name: str | None = None,
-        age: str | None = None,
-        gender: str | None = None,
-        country: str | None = None,
-        role: Optional[Role] = Role.USER,
-        user_chat: type[Base] = None,
+            self,
+            user_id: int,
+            user_name: str | None = None,
+            age: int | None = None,
+            gender: str | None = None,
+            country: str | None = None,
+            role: Optional[Role] = Role.USER,
     ) -> None:
         """Insert a new user into the database.
 
@@ -35,7 +34,6 @@ class UserRepo(Repository[User]):
         :param gender: Telegram profile second name
         :param country: Telegram profile language code
         :param role: User's role
-        :param user_chat: Telegram chat with user.
         """
         await self.session.merge(
             User(
@@ -44,13 +42,19 @@ class UserRepo(Repository[User]):
                 age=age,
                 gender=gender,
                 country=country,
-                role=role,
-                user_chat=user_chat,
+                role=role
             )
         )
+        await self.session.commit()
 
     async def get_role(self, user_id: int) -> Role:
         """Get user role by id."""
         return await self.session.scalar(
             select(User.role).where(User.user_id == user_id).limit(1)
         )
+
+    async def user_register_check(self, active_user_id: int):
+        """Get user role by id."""
+        return bool(await self.session.scalar(
+            select(User.user_id).where(User.user_id == active_user_id).limit(1)))
+

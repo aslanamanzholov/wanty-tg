@@ -1,7 +1,6 @@
 """This file represents a start logic."""
 
-
-from aiogram import Router, types
+from aiogram import Router, types, F
 from aiogram.filters import Command
 
 from aiogram.utils.keyboard import (ReplyKeyboardBuilder, ReplyKeyboardMarkup, InlineKeyboardBuilder,
@@ -10,6 +9,7 @@ from aiogram.utils.keyboard import (ReplyKeyboardBuilder, ReplyKeyboardMarkup, I
 from .router import myprofile_router
 
 
+@myprofile_router.message(F.text == 'My profile')
 @myprofile_router.message(Command(commands='myprofile'))
 async def myprofile_handler(message: types.Message):
     menu_builder = ReplyKeyboardBuilder()

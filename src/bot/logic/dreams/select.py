@@ -7,6 +7,7 @@ from src.bot.structures.keyboards.dreams import (DREAMS_MAIN_BUTTONS_MARKUP, LIK
 from .router import dreams_router
 
 
+@dreams_router.message(F.text == 'Dreams')
 @dreams_router.message(Command(commands='dreams'))
 async def dreams_handler(message: types.Message):
     dreams = [
@@ -22,10 +23,6 @@ async def dreams_handler(message: types.Message):
         }
     ]
 
-    # markup = InlineKeyboardMarkup()
-    # for dream in dreams:
-    #     for name, data in dream.items():
-    #         markup.add(InlineKeyboardButton(name, callback_data=data))
     text = 'Список желании интересных людей:' + '\n\n'
     for dream in dreams:
         for name, value in dream.items():
