@@ -15,11 +15,11 @@ async def myprofile_handler(message: types.Message):
     menu_builder = ReplyKeyboardBuilder()
 
     menu_builder.add(
-        KeyboardButton(text="Список желании")
+        KeyboardButton(text="Dreams")
     )
 
     menu_builder.add(
-        KeyboardButton(text="Написать желания")
+        KeyboardButton(text="Create")
     )
 
     await message.answer(

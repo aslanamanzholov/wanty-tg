@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.bot.structures.role import Role
 
-from ..models import Base, User
+from ..models import User
 from .abstract import Repository
 
 

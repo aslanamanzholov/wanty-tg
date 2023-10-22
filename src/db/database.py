@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine as _create_async_engine
 
 from src.configuration import conf
 
-from .repositories import UserRepo
+from .repositories import UserRepo, DreamRepo
 
 
 def create_async_engine(url: URL | str) -> AsyncEngine:
@@ -27,6 +27,8 @@ class Database:
 
     user: UserRepo
     """ User repository """
+    dream: DreamRepo
+    """ Dream repository """
 
     session: AsyncSession
 
@@ -34,6 +36,7 @@ class Database:
         self,
         session: AsyncSession,
         user: UserRepo = None,
+        dream: DreamRepo = None,
     ):
         """Initialize Database class.
 
@@ -42,3 +45,4 @@ class Database:
         """
         self.session = session
         self.user = user or UserRepo(session=session)
+        self.dream = dream or DreamRepo(session=session)

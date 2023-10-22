@@ -1,9 +1,8 @@
 from aiogram import F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.filters import Command
 
-from src.db.models import User
 from src.db.repositories import UserRepo
 from .router import register_router
 from src.bot.structures.fsm.register import RegisterGroup
@@ -51,6 +50,7 @@ async def failed_process_gender(message: Message):
     """
     return await message.reply("Неккоректный введен пол, выберите ваш пол из кнопок ниже")
 
+
 @register_router.message()
 async def unknown_process_handler(message: Message):
     """
@@ -84,7 +84,7 @@ async def register_user_handler(message: Message, state: FSMContext, db):
     user1 = UserRepo(session=db.session)
 
     await user1.new(user_id=message.from_user.id,
-                    user_name='test1',
+                    user_name=message.from_user.username,
                     age=int(data['age']),
                     gender=data['gender'],
                     country=data['country'])
