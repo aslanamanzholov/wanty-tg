@@ -2,7 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 MENU_KEYBOARD = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text='Мои желании'), KeyboardButton(text='Мои профиль')],
+        [KeyboardButton(text='Dreams'), KeyboardButton(text='My Profile')],
     ],
     resize_keyboard=True
 )

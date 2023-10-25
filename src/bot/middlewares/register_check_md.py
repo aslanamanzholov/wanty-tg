@@ -6,7 +6,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from src.bot.structures.data_structure import UserCheckRegisterTransferData
-from src.bot.structures.keyboards.register import REGISTER_SUCCESS_MARKUP
+from src.bot.structures.fsm.menu import MENU_KEYBOARD
 from src.db import Database
 
 
@@ -25,6 +25,7 @@ class RegisterCheckMiddleware(BaseMiddleware):
 
         if await db.user.user_register_check(active_user_id=user.id):
             if data['event_router'].name == 'start':
-                return await data['bot'].send_message(user.id, "1. Посмотреть список желании\n2. Посмотреть профиль", reply_markup=REGISTER_SUCCESS_MARKUP)
+                return await data['bot'].send_message(user.id, "1. Посмотреть список желании\n2. Посмотреть профиль",
+                                                      reply_markup=MENU_KEYBOARD)
 
         return await handler(event, data)

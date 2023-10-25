@@ -1,3 +1,5 @@
+"""This file represents a Register logic."""
+
 from aiogram import F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
@@ -10,7 +12,7 @@ from src.bot.structures.keyboards.register import REGISTER_USER_COUNTRY, REGISTE
     REGISTER_START_CONFIRM
 
 
-@register_router.message(F.text == 'ok, давай начнем')
+@register_router.message(F.text.lower() == 'ok, давай начнем')
 async def register_confirmation(message: Message, state: FSMContext):
     await state.set_state(RegisterGroup.age)
     return await message.answer(
@@ -19,7 +21,7 @@ async def register_confirmation(message: Message, state: FSMContext):
 
 
 @register_router.message(Command("cancel"))
-@register_router.message(F.text.casefold() == "отмена")
+@register_router.message(F.text.lower() == "отмена")
 async def cancel_handler(message: Message, state: FSMContext) -> None:
     """
     Allow user to cancel any action
@@ -43,7 +45,8 @@ async def register_gender_handler(message: Message, state: FSMContext):
     )
 
 
-@register_router.message(lambda message: message.text not in ["Мужчина", "Женщина", "Отмена"], RegisterGroup.gender)
+@register_router.message(lambda message: message.text.lower() not in ["мужчина", "женщина", "отмена"],
+                         RegisterGroup.gender)
 async def failed_process_gender(message: Message):
     """
     In this example gender has to be one of: Male, Female or Cancel.
@@ -51,12 +54,12 @@ async def failed_process_gender(message: Message):
     return await message.reply("Неккоректный введен пол, выберите ваш пол из кнопок ниже")
 
 
-@register_router.message()
-async def unknown_process_handler(message: Message):
-    """
-    In this example gender has to be one of: Male, Female or Cancel.
-    """
-    return await message.reply("Я вас не понимаю..")
+# @register_router.message()
+# async def unknown_process_handler(message: Message):
+#     """
+#     In this example gender has to be one of: Male, Female or Cancel.
+#     """
+#     return await message.reply("Я вас не понимаю..")
 
 
 @register_router.message(RegisterGroup.gender)

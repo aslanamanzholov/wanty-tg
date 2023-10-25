@@ -12,7 +12,7 @@ DREAMS_MAIN_BUTTONS_MARKUP = ReplyKeyboardMarkup(
 DREAMS_NOT_FOUND_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Dreams"), KeyboardButton(text="Create Dream"), KeyboardButton(text="Sleep")],
-        [KeyboardButton(text="My profile")]
+        [KeyboardButton(text="My Profile")]
     ],
     resize_keyboard=True
 )
@@ -26,7 +26,7 @@ LIKE_DISLIKE_BUTTONS_MARKUP = ReplyKeyboardMarkup(
 
 SLEEP_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Dreams"), KeyboardButton(text="My profile")]
+        [KeyboardButton(text="Dreams"), KeyboardButton(text="My Profile")]
     ],
     resize_keyboard=True
 )

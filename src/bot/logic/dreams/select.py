@@ -1,11 +1,13 @@
+"""This file represents a Dreams logic."""
+
 from aiogram import types
 from aiogram.filters import Command
 from aiogram import F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove, Message
 
-from src.bot.structures.keyboards.dreams import (DREAMS_MAIN_BUTTONS_MARKUP, LIKE_DISLIKE_BUTTONS_MARKUP,
-                                                 SLEEP_BUTTONS_MARKUP, DREAMS_NOT_FOUND_BUTTONS_MARKUP)
+from src.bot.structures.keyboards.dreams import (DREAMS_MAIN_BUTTONS_MARKUP, SLEEP_BUTTONS_MARKUP,
+                                                 DREAMS_NOT_FOUND_BUTTONS_MARKUP)
 
 from src.db.repositories import DreamRepo
 from .router import dreams_router
@@ -17,21 +19,21 @@ async def dreams_view_func(dreams, message):
         text = 'Увы, не могу найти желании :('
         await message.answer(text, reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
     else:
-        text = 'Список желании интересных людей:' + '\n\n'
+        text = '<b>Список желании интересных людей:</b>' + '\n\n'
         for dream in dreams:
-            text += f"Название: {dream.name}\nОписание: {dream.description}\n"
-        await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP)
+            text += f"Название: {dream.name}\nОписание: {dream.description}\n\n"
+        await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='HTML')
 
 
 @dreams_router.message(F.text.lower() == 'dreams')
 @dreams_router.message(Command(commands='dreams'))
-async def dreams_handler(message: types.Message, db):
-    dreams = await DreamRepo(session=db.session).get_list_of_dreams()
+async def process_dreams_handler(message: types.Message, db):
+    dreams = await DreamRepo(session=db.session).get_list_of_dreams(user_id=message.from_user.id)
     return await dreams_view_func(dreams, message)
 
 
 @dreams_router.message(F.text.lower() == 'create')
-async def process_like_command(message: types.Message, state: FSMContext):
+async def process_create_command(message: types.Message, state: FSMContext):
     await state.set_state(DreamGroup.name)
     return await message.answer(
         'Введите название желании?', reply_markup=ReplyKeyboardRemove(),
@@ -64,13 +66,17 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
 
 @dreams_router.message(F.text.lower() == 'like')
 async def process_like_command(message: types.Message, db):
-    dreams = await DreamRepo(session=db.session).get_next_obj_of_dream(offset=1)
+    pages_count = await DreamRepo(session=db.session).get_list_of_dreams(user_id=message.from_user.id)
+    dreams = await DreamRepo(session=db.session).get_next_obj_of_dream(user_id=message.from_user.id)
     return await dreams_view_func(dreams, message)
 
 
 @dreams_router.message(F.text.lower() == 'dislike')
 async def process_dislike_command(message: types.Message, db):
-    dreams = await DreamRepo(session=db.session).get_next_obj_of_dream(offset=1)
+    offset = 0
+    if offset:
+        offset += 1
+    dreams = await DreamRepo(session=db.session).get_next_obj_of_dream(offset=offset, user_id=message.from_user.id)
     return await dreams_view_func(dreams, message)
 
 

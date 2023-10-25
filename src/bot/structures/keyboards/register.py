@@ -2,7 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 
 REGISTER_START_CONFIRM = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="ok, давай начнем")]
+        [KeyboardButton(text="OK, давай начнем")]
     ],
     resize_keyboard=True
 )
@@ -25,7 +25,7 @@ REGISTER_USER_COUNTRY = ReplyKeyboardMarkup(
 
 REGISTER_SUCCESS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Dreams"), KeyboardButton(text="My profile")]
+        [KeyboardButton(text="Dreams"), KeyboardButton(text="My Profile")]
     ],
     resize_keyboard=True
 )
