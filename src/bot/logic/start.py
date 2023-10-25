@@ -1,30 +1,29 @@
 """This file represents a start logic."""
-import logging
 
 from aiogram import Router, types
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 
-from aiogram.utils.keyboard import (ReplyKeyboardBuilder, ReplyKeyboardMarkup, InlineKeyboardBuilder,
-                                    InlineKeyboardMarkup, KeyboardButton, InlineKeyboardButton, KeyboardButtonPollType)
-from sqlalchemy import select
-
 from src.bot.filters.register_filter import RegisterFilter
 from src.bot.structures.fsm.menu import MENU_KEYBOARD
 from src.bot.structures.fsm.register import RegisterGroup
 from src.bot.structures.keyboards.register import REGISTER_START_CONFIRM
-from src.db.models import User
 
 start_router = Router(name='start')
 
 
 @start_router.message(CommandStart(), RegisterFilter())
 async def start_handler(message: types.Message, state: FSMContext, db):
-    await state.set_state(RegisterGroup.age)
-    return await message.answer(
-        'Будьте первым кто делится желаниями в Wanty.\nЯ помогу найти тебе пару для совместных желании.',
-        reply_markup=REGISTER_START_CONFIRM
-    )
+    user = await db.user.user_register_check(active_user_id=message.from_user.id)
+    if user is not None:
+        await message.answer("1. Посмотреть список желании\n2. Посмотреть профиль",
+                             reply_markup=MENU_KEYBOARD)
+    else:
+        await state.set_state(RegisterGroup.age)
+        return await message.answer(
+            'Будьте первым кто делится желаниями в Wanty.\nЯ помогу найти тебе пару для совместных желании.',
+            reply_markup=REGISTER_START_CONFIRM
+        )
 
 
 @start_router.message(CommandStart())

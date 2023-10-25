@@ -28,7 +28,7 @@ async def dreams_view_func(dreams, message):
 @dreams_router.message(F.text.lower() == 'dreams')
 @dreams_router.message(Command(commands='dreams'))
 async def process_dreams_handler(message: types.Message, db):
-    dreams = await DreamRepo(session=db.session).get_list_of_dreams(user_id=message.from_user.id)
+    dreams = await db.dream.get_list_of_dreams(user_id=message.from_user.id)
     return await dreams_view_func(dreams, message)
 
 

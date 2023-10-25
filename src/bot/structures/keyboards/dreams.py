@@ -11,7 +11,7 @@ DREAMS_MAIN_BUTTONS_MARKUP = ReplyKeyboardMarkup(
 
 DREAMS_NOT_FOUND_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Dreams"), KeyboardButton(text="Create Dream"), KeyboardButton(text="Sleep")],
+        [KeyboardButton(text="Dreams"), KeyboardButton(text="Create"), KeyboardButton(text="Sleep")],
         [KeyboardButton(text="My Profile")]
     ],
     resize_keyboard=True

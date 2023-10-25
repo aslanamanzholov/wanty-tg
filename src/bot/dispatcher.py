@@ -47,7 +47,7 @@ def get_dispatcher(
 
     dp.update.middleware.register(DatabaseMiddleware())
 
-    dp.message.middleware(RegisterCheckMiddleware())
-    dp.callback_query.middleware(RegisterCheckMiddleware())
+    # dp.message.middleware(RegisterCheckMiddleware())
+    # dp.callback_query.middleware(RegisterCheckMiddleware())
 
     return dp
