@@ -1,8 +1,9 @@
 """Dream repository file."""
 import logging
 from collections.abc import Sequence
+from typing import Any
 
-from sqlalchemy import select, ScalarResult
+from sqlalchemy import select, ScalarResult, delete, CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Base, Dream, User
@@ -57,6 +58,12 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dreams_of_user(self, user_id: int, limit: int = 100) -> Sequence[Base]:
         """Get user dreams by id."""
-        statement = select(self.type_model).filter(Dream.user_id == user_id).limit(limit)
+        statement = select(self.type_model).where(Dream.user_id == user_id).limit(limit)
 
         return (await self.session.scalars(statement)).all()
+
+    async def delete_dream_of_user(self, dream_id: int):
+        """Get user dreams by id."""
+        statement = delete(self.type_model).where(Dream.id == dream_id)
+
+        return await self.session.scalar(statement)

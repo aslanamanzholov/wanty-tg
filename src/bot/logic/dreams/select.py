@@ -36,7 +36,7 @@ async def process_dreams_handler(message: types.Message, db):
 async def process_create_command(message: types.Message, state: FSMContext):
     await state.set_state(DreamGroup.name)
     return await message.answer(
-        'Введите название желании?', reply_markup=ReplyKeyboardRemove(),
+        'Расскажи людям про свои желания\n(н-р: - Хочу путешествовать по странам)', reply_markup=ReplyKeyboardRemove(),
     )
 
 
@@ -45,29 +45,27 @@ async def register_gender_handler(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
     await state.set_state(DreamGroup.description)
     return await message.answer(
-        'Теперь определимся с описанием желании', reply_markup=ReplyKeyboardRemove()
+        'Опиши ниже подробности желаний ;)', reply_markup=ReplyKeyboardRemove()
     )
 
 
 @dreams_router.message(DreamGroup.description)
 async def register_gender_handler(message: Message, state: FSMContext, db):
     data = await state.update_data(description=message.text)
-    dream1 = DreamRepo(session=db.session)
-
-    await dream1.new(user_id=message.from_user.id,
-                     name=data['name'],
-                     description=data['description'])
-
+    await db.dream.new(user_id=message.from_user.id,
+                       name=data['name'],
+                       description=data['description'])
     await state.clear()
     return await message.answer(
-        'Вы успешно создали желанию, ожидайте..', reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP
+        'Поздравляю, ты поделился с пользователями со своими желаниями..',
+        reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP
     )
 
 
 @dreams_router.message(F.text.lower() == 'like')
 async def process_like_command(message: types.Message, db):
-    pages_count = await DreamRepo(session=db.session).get_list_of_dreams(user_id=message.from_user.id)
-    dreams = await DreamRepo(session=db.session).get_next_obj_of_dream(user_id=message.from_user.id)
+    pages_count = await db.dream.get_list_of_dreams(user_id=message.from_user.id)
+    dreams = await db.dream.get_next_obj_of_dream(user_id=message.from_user.id)
     return await dreams_view_func(dreams, message)
 
 
@@ -76,7 +74,7 @@ async def process_dislike_command(message: types.Message, db):
     offset = 0
     if offset:
         offset += 1
-    dreams = await DreamRepo(session=db.session).get_next_obj_of_dream(offset=offset, user_id=message.from_user.id)
+    dreams = await db.dream.get_next_obj_of_dream(offset=offset, user_id=message.from_user.id)
     return await dreams_view_func(dreams, message)
 
 

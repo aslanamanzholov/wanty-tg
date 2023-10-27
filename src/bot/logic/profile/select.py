@@ -35,5 +35,5 @@ async def myprofile_edit_dream_callback_handler(callback_query: types.CallbackQu
 async def myprofile_delete_dream_callback_handler(callback_query: types.CallbackQuery, db):
     dream_id = callback_query.data.split(' ')[1] or None
     if dream_id:
-        await db.dream.delete(Dream.id == int(dream_id))
+        await db.dream.delete_dream_of_user(int(dream_id))
     await callback_query.message.edit_text("Желание успешно удален")

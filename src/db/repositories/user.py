@@ -55,8 +55,8 @@ class UserRepo(Repository[User]):
 
     async def user_register_check(self, active_user_id: int):
         """Get user register check by id."""
-        return await self.session.scalar(
-            select(User.user_id).where(User.user_id == active_user_id).limit(1)
-        )
+        return (await self.session.scalars(
+            select(self.type_model).where(User.user_id == active_user_id).limit(1)
+        )).one_or_none()
 
 

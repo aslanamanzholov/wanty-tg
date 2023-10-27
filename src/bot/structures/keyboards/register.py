@@ -17,7 +17,9 @@ REGISTER_USER_GENDER = ReplyKeyboardMarkup(
 
 REGISTER_USER_COUNTRY = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Отправить координаты", request_location=True)],
+        [KeyboardButton(text="Алматы"), KeyboardButton(text="Астана")],
+        [KeyboardButton(text="Атырау"), KeyboardButton(text="Шымкент")],
+        [KeyboardButton(text="Другой")],
         [KeyboardButton(text="Отмена")]
     ],
     resize_keyboard=True

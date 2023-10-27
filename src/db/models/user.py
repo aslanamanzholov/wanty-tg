@@ -16,6 +16,9 @@ class User(Base):
     user_name: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
+    name: Mapped[str] = mapped_column(
+        sa.Text, unique=False, nullable=True
+    )
     age: Mapped[int] = mapped_column(
         sa.SmallInteger, unique=False, nullable=True
     )

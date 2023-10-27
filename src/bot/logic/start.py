@@ -15,21 +15,11 @@ start_router = Router(name='start')
 @start_router.message(CommandStart(), RegisterFilter())
 async def start_handler(message: types.Message, state: FSMContext, db):
     user = await db.user.user_register_check(active_user_id=message.from_user.id)
-    if user is not None:
-        await message.answer("1. Посмотреть список желании\n2. Посмотреть профиль",
-                             reply_markup=MENU_KEYBOARD)
-    else:
+    if user is None:
         await state.set_state(RegisterGroup.age)
         return await message.answer(
             'Будьте первым кто делится желаниями в Wanty.\nЯ помогу найти тебе пару для совместных желании.',
-            reply_markup=REGISTER_START_CONFIRM
-        )
-
-
-@start_router.message(CommandStart())
-async def start_w_register(message: types.Message):
-    """Start command handler"""
-    return await message.answer(
-        'Меню',
-        reply_markup=MENU_KEYBOARD
-    )
+            reply_markup=REGISTER_START_CONFIRM)
+    else:
+        await message.answer(f"Привет, {user.name if user.name else message.from_user.first_name}!\n\n"
+                             f"1. Посмотреть список желании\n2. Посмотреть профиль", reply_markup=MENU_KEYBOARD)
