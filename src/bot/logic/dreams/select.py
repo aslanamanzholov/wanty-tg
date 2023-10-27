@@ -21,7 +21,7 @@ async def dreams_view_func(dreams, message):
     else:
         text = '<b>Список желании интересных людей:</b>' + '\n\n'
         for dream in dreams:
-            text += f"Название: {dream.name}\nОписание: {dream.description}\n\n"
+            text += f"Название: {dream.name}\n---------------------------------------\nОписание: {dream.description}\n\n"
         await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='HTML')
 
 
@@ -57,7 +57,7 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
                        description=data['description'])
     await state.clear()
     return await message.answer(
-        'Поздравляю, ты поделился с пользователями со своими желаниями..',
+        'Ты успешно поделился со своим желанием с пользователями Wanty..\n\nОжидайте взаимных откликов',
         reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP
     )
 

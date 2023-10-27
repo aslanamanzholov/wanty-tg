@@ -21,6 +21,7 @@ class UserRepo(Repository[User]):
             self,
             user_id: int,
             user_name: str | None = None,
+            name: str | None = None,
             age: int | None = None,
             gender: str | None = None,
             country: str | None = None,
@@ -30,6 +31,7 @@ class UserRepo(Repository[User]):
 
         :param user_id: Telegram user id
         :param user_name: Telegram username
+        :param name: Name of User in Wanty
         :param age: Telegram profile first name
         :param gender: Telegram profile second name
         :param country: Telegram profile language code
@@ -39,6 +41,7 @@ class UserRepo(Repository[User]):
             User(
                 user_id=user_id,
                 user_name=user_name,
+                name=name,
                 age=age,
                 gender=gender,
                 country=country,
