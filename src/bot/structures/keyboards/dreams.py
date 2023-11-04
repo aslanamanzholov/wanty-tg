@@ -29,6 +29,13 @@ DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+CANCEL_BUTTON = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Отмена")]
+    ],
+    resize_keyboard=True
+)
+
 LIKE_DISLIKE_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text=emoji.emojize(":ZZZ:"))]

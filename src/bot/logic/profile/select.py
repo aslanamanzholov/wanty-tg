@@ -2,10 +2,28 @@
 
 from aiogram import types, F
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .router import myprofile_router
-from ...structures.keyboards.dreams import DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP
+from bot.structures.fsm.dream_edit import DreamEditGroup
+from bot.structures.keyboards.dreams import DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP, CANCEL_BUTTON, \
+    DREAMS_NOT_FOUND_BUTTONS_MARKUP
+
+
+@myprofile_router.message(F.text.lower() == "отмена")
+async def cancel_handler(message: types.Message, state: FSMContext) -> None:
+    """
+    Allow user to cancel any action
+    """
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    await state.clear()
+    await message.answer(
+        "Вы успешно отменили", reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP,
+    )
 
 
 @myprofile_router.message(F.text.lower() == 'мои желании')
@@ -21,7 +39,7 @@ async def mydream_handler(message: types.Message, db):
                 ]
             )
             text = (f"<b>Название:</b> {dream.name.strip()}\n---------------------------------------"
-                    f"\nОписание: {dream.description.strip()}\n\n")
+                    f"\n<b>Описание:</b> {dream.description.strip()}\n\n")
             await message.answer("<b>Вот такие у тебя желании:</b>\n\n" + text,
                                  reply_markup=reply_markup, parse_mode='HTML')
     else:
@@ -30,13 +48,44 @@ async def mydream_handler(message: types.Message, db):
 
 
 @myprofile_router.callback_query(F.data.startswith("edit_dream"))
-async def myprofile_edit_dream_callback_handler(callback_query: types.CallbackQuery, db):
-    await callback_query.message.answer("Вы нажали на кнопку Изменить")
+async def myprofile_edit_dream_callback_handler(callback_query: types.CallbackQuery, state: FSMContext, db):
+    dream_id = callback_query.data.split(' ')[1] or None
+    await state.set_state(DreamEditGroup.name)
+    await state.update_data(dream_id=dream_id)
+    return await callback_query.message.answer(
+        'Напиши как ты хочешь редактировать название желании:', reply_markup=CANCEL_BUTTON,
+    )
+
+
+@myprofile_router.message(DreamEditGroup.name)
+async def edit_dream_description_handler(message: types.Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    await state.set_state(DreamEditGroup.description)
+    return await message.answer(
+        'Опиши ниже подробности желаний на которую хочешь поменять ;)', reply_markup=CANCEL_BUTTON
+    )
+
+
+@myprofile_router.message(DreamEditGroup.description)
+async def edit_user_dream_handler(message: types.Message, state: FSMContext, db):
+    data = await state.update_data(description=message.text)
+    dream = await db.dream.get_dream_by_id(int(data['dream_id']))
+    dream.data = data
+    db.session.commit()
+    await state.clear()
+    return await message.answer(
+        'Ты успешно обновил содержимое желании..\n\nОжидайте взаимных откликов',
+        reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP
+    )
 
 
 @myprofile_router.callback_query(F.data.startswith("delete_dream"))
 async def myprofile_delete_dream_callback_handler(callback_query: types.CallbackQuery, db):
     dream_id = callback_query.data.split(' ')[1] or None
-    if dream_id:
-        await db.dream.delete_dream_of_user(int(dream_id))
-    await callback_query.message.edit_text("Желание успешно удален")
+    dream = await db.dream.get_dream_by_id(int(dream_id))
+    if dream:
+        await db.session.delete(dream)
+        await db.session.commit()
+        await callback_query.message.edit_text("Желание успешно удалена")
+    else:
+        await callback_query.message.edit_text("Не могу найти желание :(")

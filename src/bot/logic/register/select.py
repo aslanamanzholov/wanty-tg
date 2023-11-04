@@ -9,7 +9,7 @@ from .router import register_router
 from src.bot.structures.fsm.register import RegisterGroup
 from src.bot.structures.keyboards.register import REGISTER_USER_COUNTRY, REGISTER_USER_GENDER, REGISTER_SUCCESS_MARKUP, \
     REGISTER_START_CONFIRM
-from src.bot.structures.fsm.menu import MENU_KEYBOARD
+from src.bot.structures.keyboards.menu import MENU_KEYBOARD
 
 
 @register_router.message(F.text.lower() == 'ok, давай начнем')
@@ -23,7 +23,6 @@ async def register_confirmation(message: Message, state: FSMContext, db):
                              f"1. Посмотреть список желании\n2. Посмотреть профиль", reply_markup=MENU_KEYBOARD)
 
 
-@register_router.message(Command("cancel"))
 @register_router.message(F.text.lower() == "отмена")
 async def cancel_handler(message: Message, state: FSMContext) -> None:
     """

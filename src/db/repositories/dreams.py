@@ -38,24 +38,13 @@ class DreamRepo(Repository[Dream]):
         )
         await self.session.commit()
 
-    async def get_list_of_dreams(self, user_id, limit: int = 1) -> Sequence[Base]:
-        """Get user role by id."""
-        statement = select(self.type_model).where(Dream.user_id != user_id).limit(limit)
-
-        return (await self.session.scalars(statement)).all()
-
-    async def get_next_obj_of_dream(self, user_id, offset: int = 1, limit: int = 1) -> Sequence[Base]:
-        offset = 0
-        if offset:
-            offset += 1
-        if offset == 1:
-            offset += 1
+    async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        statement = select(self.type_model).where(Dream.user_id != user_id).limit(limit).offset(offset)
+        statement = select(self.type_model).where(Dream.user_id != user_id).offset(offset).limit(limit)
 
-        return (await self.session.scalars(statement)).all()
+        return (await self.session.scalars(statement)).first()
 
-    async def get_elements_count_of_dream(self, user_id, offset: int = 0, limit: int = 1) -> int:
+    async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
         statement = select(self.type_model).where(Dream.user_id != user_id)
 
@@ -67,8 +56,8 @@ class DreamRepo(Repository[Dream]):
 
         return (await self.session.scalars(statement)).all()
 
-    async def delete_dream_of_user(self, dream_id: int):
+    async def get_dream_by_id(self, dream_id: int):
         """Get user dreams by id."""
-        statement = delete(self.type_model).where(Dream.id == dream_id)
+        statement = select(self.type_model).where(Dream.id == dream_id)
 
-        return await self.session.scalar(statement)
+        return (await self.session.scalars(statement)).first()

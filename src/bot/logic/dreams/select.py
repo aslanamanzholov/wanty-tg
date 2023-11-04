@@ -4,38 +4,35 @@ from aiogram import types
 from aiogram.filters import Command
 from aiogram import F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import ReplyKeyboardRemove, Message
+from aiogram.types import Message
 
 from src.bot.structures.keyboards.dreams import (DREAMS_MAIN_BUTTONS_MARKUP, SLEEP_BUTTONS_MARKUP,
-                                                 DREAMS_NOT_FOUND_BUTTONS_MARKUP)
+                                                 DREAMS_NOT_FOUND_BUTTONS_MARKUP, CANCEL_BUTTON)
 
 from .router import dreams_router
 from src.bot.structures.fsm.dream_create import DreamGroup
 
 
-async def dreams_view_func(dreams, message):
-    if not dreams:
-        text = 'Увы, не могу найти желании :('
-        await message.answer(text, reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
-    else:
-        text = '<b>Список желании интересных людей:</b>' + '\n\n'
-        for dream in dreams:
-            text += f"Название: {dream.name}\n---------------------------------------\nОписание: {dream.description}\n\n"
-        await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='HTML')
+@dreams_router.message(F.text.lower() == "отмена")
+async def cancel_handler(message: Message, state: FSMContext) -> None:
+    """
+    Allow user to cancel any action
+    """
+    current_state = await state.get_state()
+    if current_state is None:
+        return
 
-
-@dreams_router.message(F.text.lower().startswith('желании'))
-@dreams_router.message(Command(commands='dreams'))
-async def process_dreams_handler(message: types.Message, db):
-    dreams = await db.dream.get_list_of_dreams(user_id=message.from_user.id)
-    return await dreams_view_func(dreams, message)
+    await state.clear()
+    await message.answer(
+        "Вы успешно отменили", reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP,
+    )
 
 
 @dreams_router.message(F.text.lower().startswith('создать желание'))
 async def process_create_command(message: types.Message, state: FSMContext):
     await state.set_state(DreamGroup.name)
     return await message.answer(
-        'Расскажи людям про свои желания\n(н-р: - Хочу путешествовать по странам)', reply_markup=ReplyKeyboardRemove(),
+        'Расскажи людям про свои желания\n(н-р: - Хочу путешествовать по странам)', reply_markup=CANCEL_BUTTON,
     )
 
 
@@ -44,7 +41,7 @@ async def register_gender_handler(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
     await state.set_state(DreamGroup.description)
     return await message.answer(
-        'Опиши ниже подробности желаний ;)', reply_markup=ReplyKeyboardRemove()
+        'Опиши ниже подробности желаний ;)', reply_markup=CANCEL_BUTTON
     )
 
 
@@ -60,39 +57,44 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
         reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP
     )
 
+current_record = {}
 
-@dreams_router.message(Command("cancel"))
-@dreams_router.message(F.text.lower() == "отмена")
-async def cancel_handler(message: Message, state: FSMContext) -> None:
-    """
-    Allow user to cancel any action
-    """
-    current_state = await state.get_state()
-    if current_state is None:
-        return
 
-    await state.clear()
-    await message.answer(
-        "Вы отменили создание желании", reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP,
-    )
+async def dreams_view_func(dream, message, user_id, offset):
+    if dream:
+        current_record[user_id] = offset + 1
+        text = '<b>Список желании интересных людей:</b>' + '\n\n'
+        text += (f"Название: {dream.name}\n---------------------------------------\n"
+                 f"Описание: {dream.description}\n\n")
+        await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='HTML')
+    else:
+        text = 'Больше желании нет :('
+        await message.answer(text, reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
+
+
+@dreams_router.message(F.text.lower().startswith('желании'))
+@dreams_router.message(Command(commands='dreams'))
+async def process_dreams_handler(message: types.Message, db):
+    user_id = message.from_user.id
+    offset = current_record.get(user_id, 0)
+    dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset)
+    return await dreams_view_func(dream, message, user_id, offset)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":red_heart:"))
 async def process_like_command(message: types.Message, db):
-    pages_count = await db.dream.get_list_of_dreams(user_id=message.from_user.id)
-    dreams = await db.dream.get_next_obj_of_dream(user_id=message.from_user.id)
-    return await dreams_view_func(dreams, message)
+    user_id = message.from_user.id
+    offset = current_record.get(user_id, 0)
+    dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset)
+    return await dreams_view_func(dream, message, user_id, offset)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":thumbs_down:"))
 async def process_dislike_command(message: types.Message, db):
-    offset = 0
-    if offset:
-        offset += 1
-    if offset == 1:
-        offset += 1
-    dreams = await db.dream.get_next_obj_of_dream(offset=offset, user_id=message.from_user.id)
-    return await dreams_view_func(dreams, message)
+    user_id = message.from_user.id
+    offset = current_record.get(user_id, 0)
+    dreams = await db.dream.get_dream(offset=offset, user_id=message.from_user.id)
+    return await dreams_view_func(dreams, message, user_id, offset)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":ZZZ:"))
