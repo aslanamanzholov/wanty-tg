@@ -22,7 +22,7 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 
     await state.clear()
     await message.answer(
-        "Вы успешно отменили", reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP,
+        "Вы отменили :(", reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP,
     )
 
 

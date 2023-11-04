@@ -34,7 +34,7 @@ async def cancel_handler(message: Message, state: FSMContext) -> None:
 
     await state.clear()
     await message.answer(
-        "Вы отменили регистрацию", reply_markup=REGISTER_START_CONFIRM,
+        "Вы отменили регистрацию :(", reply_markup=REGISTER_START_CONFIRM,
     )
 
 
