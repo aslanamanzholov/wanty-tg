@@ -11,7 +11,6 @@ from src.configuration import conf
 
 from .logic import routers
 from .middlewares.database_md import DatabaseMiddleware
-from .middlewares.register_check_md import RegisterCheckMiddleware
 
 
 def get_redis_storage(
@@ -46,8 +45,5 @@ def get_dispatcher(
     # Register middlewares
 
     dp.update.middleware.register(DatabaseMiddleware())
-
-    # dp.message.middleware(RegisterCheckMiddleware())
-    # dp.callback_query.middleware(RegisterCheckMiddleware())
 
     return dp

@@ -45,6 +45,11 @@ class DreamRepo(Repository[Dream]):
         return (await self.session.scalars(statement)).all()
 
     async def get_next_obj_of_dream(self, user_id, offset: int = 1, limit: int = 1) -> Sequence[Base]:
+        offset = 0
+        if offset:
+            offset += 1
+        if offset == 1:
+            offset += 1
         """Get dream"""
         statement = select(self.type_model).where(Dream.user_id != user_id).limit(limit).offset(offset)
 

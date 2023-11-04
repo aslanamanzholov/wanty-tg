@@ -1,3 +1,4 @@
+import emoji
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 REGISTER_START_CONFIRM = ReplyKeyboardMarkup(
@@ -27,7 +28,7 @@ REGISTER_USER_COUNTRY = ReplyKeyboardMarkup(
 
 REGISTER_SUCCESS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Dreams"), KeyboardButton(text="My Profile")]
+        [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text="Мои желании")]
     ],
     resize_keyboard=True
 )

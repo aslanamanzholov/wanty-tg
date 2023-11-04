@@ -22,4 +22,4 @@ async def start_handler(message: types.Message, state: FSMContext, db):
             reply_markup=REGISTER_START_CONFIRM)
     else:
         await message.answer(f"Привет, {user.name if user.name else message.from_user.first_name}!\n\n"
-                             f"1. Посмотреть список желании\n2. Посмотреть профиль", reply_markup=MENU_KEYBOARD)
+                             f"1. Посмотреть список желании\n2. Посмотреть твои желании", reply_markup=MENU_KEYBOARD)
