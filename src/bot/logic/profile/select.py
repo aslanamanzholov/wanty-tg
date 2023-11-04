@@ -6,9 +6,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .router import myprofile_router
-from bot.structures.fsm.dream_edit import DreamEditGroup
-from bot.structures.keyboards.dreams import DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP, CANCEL_BUTTON, \
-    DREAMS_NOT_FOUND_BUTTONS_MARKUP
+from src.bot.structures.fsm.dream_edit import DreamEditGroup
+from src.bot.structures.keyboards.dreams import (DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP,
+                                                 CANCEL_BUTTON, DREAMS_NOT_FOUND_BUTTONS_MARKUP)
 
 
 @myprofile_router.message(F.text.lower() == "отмена")
@@ -43,7 +43,7 @@ async def mydream_handler(message: types.Message, db):
             await message.answer("<b>Вот такие у тебя желании:</b>\n\n" + text,
                                  reply_markup=reply_markup, parse_mode='HTML')
     else:
-        await message.answer("Упс, но у вас нет желании в Wanty :(\nВы сможете создать желанию по кнопке ниже",
+        await message.answer("Упс, но у вас нет желании в Wanty :(\nВы сможете создать желание по кнопке ниже",
                              reply_markup=DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP)
 
 
