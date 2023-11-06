@@ -20,18 +20,21 @@ class DreamRepo(Repository[Dream]):
     async def new(
             self,
             user_id: int,
+            username: str | None = None,
             name: str | None = None,
             description: str | None = None,
     ) -> None:
         """Insert a new user into the database.
 
         :param user_id: Telegram user id
+        :param username: Telegram username
         :param name: Name of Dream
         :param description: Description of Dream
         """
         await self.session.merge(
             Dream(
                 user_id=user_id,
+                username=username,
                 name=name,
                 description=description
             )

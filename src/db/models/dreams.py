@@ -8,10 +8,14 @@ from .base import Base
 class Dream(Base):
     """Dream model."""
 
+    """ Telegram from user id """
     user_id: Mapped[int] = mapped_column(
         sa.BigInteger, unique=False, nullable=False
     )
-    """ Telegram user id """
+    """ Telegram from user name """
+    username: Mapped[int] = mapped_column(
+        sa.Text, unique=False, nullable=True
+    )
     name: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )

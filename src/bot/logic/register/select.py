@@ -3,7 +3,6 @@
 from aiogram import F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
-from aiogram.filters import Command
 
 from .router import register_router
 from src.bot.structures.fsm.register import RegisterGroup

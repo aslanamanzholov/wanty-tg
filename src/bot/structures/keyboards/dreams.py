@@ -12,6 +12,13 @@ DREAMS_MAIN_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+DREAMS_CALLBACK_FROM_USER_BUTTONS_MARKUP = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Да"), KeyboardButton(text=emoji.emojize(":thumbs_down:"))]
+    ],
+    resize_keyboard=True
+)
+
 DREAMS_NOT_FOUND_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text="Создать желание"),
