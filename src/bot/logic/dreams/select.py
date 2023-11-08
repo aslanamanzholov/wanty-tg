@@ -65,7 +65,7 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
         photo = data['image'][-1]
         photo_file = await message.bot.get_file(photo.file_id)
         photo_url = photo_file.file_path
-        request_url = f"https://api.telegram.org/file/bot6863824279:AAF3vNcEh4Or4bcA_bXXsf9flYVhVD5yJ9o/{photo_url}"
+        request_url = f"https://api.telegram.org/file/bot6588244500:AAGiEK6doTmFGPk9-17i-jBbozKfjQsz8W8/{photo_url}"
         response = requests.get(request_url)
         if response.status_code == 200:
             dream_image = response.content
