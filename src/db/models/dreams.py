@@ -16,6 +16,9 @@ class Dream(Base):
     username: Mapped[int] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
+    image = mapped_column(
+        sa.LargeBinary, nullable=True
+    )
     name: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )

@@ -6,8 +6,7 @@ DREAMS_MAIN_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=f"Создать желание {emoji.emojize(':thought_balloon:')}")],
         [KeyboardButton(text=emoji.emojize(":red_heart:")),
-         KeyboardButton(text=emoji.emojize(":thumbs_down:")), KeyboardButton(text=emoji.emojize(":ZZZ:"))],
-        [KeyboardButton(text=emoji.emojize(":love_letter:"))]
+         KeyboardButton(text=emoji.emojize(":thumbs_down:")), KeyboardButton(text=emoji.emojize(":ZZZ:"))]
     ],
     resize_keyboard=True
 )
@@ -39,6 +38,13 @@ DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP = ReplyKeyboardMarkup(
 CANCEL_BUTTON = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Отмена")]
+    ],
+    resize_keyboard=True
+)
+
+CANCEL_WITHOUT_IMAGE_BUTTON = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Без изображений"), KeyboardButton(text="Отмена")]
     ],
     resize_keyboard=True
 )

@@ -46,13 +46,15 @@ async def register_gender_handler(message: Message, state: FSMContext):
     )
 
 
-@register_router.message(lambda message: message.text.lower() not in ["мужчина", "женщина", "отмена"],
-                         RegisterGroup.gender)
+@register_router.message(RegisterGroup.gender)
 async def failed_process_gender(message: Message):
     """
     In this example gender has to be one of: Male, Female or Cancel.
     """
-    return await message.reply("Неккоректный введен пол, выберите ваш пол из кнопок ниже")
+    if message.text and message.text.lower() not in ["мужчина", "женщина", "отмена"]:
+        return await message.reply("Неккоректный введен пол, выберите ваш пол из кнопок ниже")
+    else:
+        return True
 
 
 @register_router.message(RegisterGroup.gender)

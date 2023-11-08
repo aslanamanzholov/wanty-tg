@@ -1,7 +1,7 @@
 """This file represents a Dreams logic."""
-import json
-
 import emoji
+import requests
+
 from aiogram import types
 from aiogram.filters import Command
 from aiogram import F
@@ -10,7 +10,7 @@ from aiogram.types import Message, ReplyKeyboardRemove, InlineKeyboardMarkup, In
 
 from src.bot.structures.keyboards.dreams import (DREAMS_MAIN_BUTTONS_MARKUP, SLEEP_BUTTONS_MARKUP,
                                                  DREAMS_NOT_FOUND_BUTTONS_MARKUP, CANCEL_BUTTON,
-                                                 DREAMS_CALLBACK_FROM_USER_BUTTONS_MARKUP)
+                                                 CANCEL_WITHOUT_IMAGE_BUTTON)
 
 from .router import dreams_router
 from src.bot.structures.fsm.dream_create import DreamGroup
@@ -43,18 +43,39 @@ async def process_create_command(message: types.Message, state: FSMContext):
 async def register_gender_handler(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
     await state.set_state(DreamGroup.description)
-    return await message.answer(
-        'Опиши ниже подробности желаний ;)', reply_markup=CANCEL_BUTTON
-    )
+    return await message.answer(f"Отправьте изображение с желанием, оно поможет привлечь больше внимания и "
+                                f"заинтересовать больше людей {emoji.emojize(':thumbs_up:')} (не обязательное поле)",
+                                reply_markup=CANCEL_WITHOUT_IMAGE_BUTTON)
 
 
 @dreams_router.message(DreamGroup.description)
+async def register_gender_handler(message: Message, state: FSMContext):
+    await state.update_data(image=message.photo)
+    await state.set_state(DreamGroup.image)
+    return await message.answer(
+        f'Опиши ниже подробности желаний {emoji.emojize(":upside-down_face:")}', reply_markup=CANCEL_BUTTON
+    )
+
+
+@dreams_router.message(DreamGroup.image)
 async def register_gender_handler(message: Message, state: FSMContext, db):
     data = await state.update_data(description=message.text)
+    dream_image = data['image']
+    if dream_image:
+        photo = data['image'][-1]
+        photo_file = await message.bot.get_file(photo.file_id)
+        photo_url = photo_file.file_path
+        request_url = f"https://api.telegram.org/file/bot6863824279:AAF3vNcEh4Or4bcA_bXXsf9flYVhVD5yJ9o/{photo_url}"
+        response = requests.get(request_url)
+        if response.status_code == 200:
+            dream_image = response.content
+
     await db.dream.new(user_id=message.from_user.id,
                        username=message.from_user.username,
+                       image=dream_image,
                        name=data['name'],
                        description=data['description'])
+
     await state.clear()
     return await message.answer(
         'Ты успешно поделился со своим желанием с пользователями Wanty..\n\nОжидайте взаимных откликов',
@@ -67,10 +88,17 @@ current_record = {}
 
 async def dreams_view_func(dream, message):
     if dream:
-        text = '<b>Список желании интересных людей:</b>' + '\n\n'
-        text += (f"Название: {dream.name}\n---------------------------------------\n"
-                 f"Описание: {dream.description}\n\n")
-        await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='HTML')
+        text = (f"\n*Тема*:  {dream.name}\n"
+                f"*Описание*:  {dream.description}")
+        if dream.image:
+            await message.bot.send_photo(message.chat.id,
+                                         types.BufferedInputFile(dream.image,
+                                                                 filename=f"user_photo_{dream.id}.png"),
+                                         caption=text,
+                                         reply_markup=DREAMS_MAIN_BUTTONS_MARKUP,
+                                         parse_mode='MARKDOWN')
+        else:
+            await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='MARKDOWN')
     else:
         text = 'Больше желании нет :('
         await message.answer(text, reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
@@ -112,7 +140,7 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
         notification_message = (f"Вот его профиль в телеграмме, выполняйте "
                                 f"ваши совместные желания:\n"
                                 f"<a href='https://t.me/{liker_username_id}/'>{liker_username_id}</a>")
-        notification_for_sender_message = (f"Это автор желании, выполняйте совместные желания:\n"
+        notification_for_sender_message = (f"Это автор желании, выполняйте совместные желания: "
                                            f"<a href='https://t.me/{dream_username_id}/'>{dream_username_id}</a>")
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,
                                               reply_markup=ReplyKeyboardRemove(), parse_mode='HTML')

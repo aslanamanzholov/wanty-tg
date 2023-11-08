@@ -38,10 +38,18 @@ async def mydream_handler(message: types.Message, db):
                     [InlineKeyboardButton(text='Удалить', callback_data=f'delete_dream {dream.id}')]
                 ]
             )
-            text = (f"<b>Название:</b> {dream.name.strip()}\n---------------------------------------"
-                    f"\n<b>Описание:</b> {dream.description.strip()}\n\n")
-            await message.answer("<b>Вот такие у тебя желании:</b>\n\n" + text,
-                                 reply_markup=reply_markup, parse_mode='HTML')
+            text = (f"\n*Желание №{dream.id}*\n\n"
+                    f"*Тема*: {dream.name}\n"
+                    f"*Описание*: {dream.description}\n\n")
+            if dream.image:
+                await message.bot.send_photo(message.chat.id,
+                                             types.BufferedInputFile(dream.image,
+                                                                     filename=f"user_photo_{dream.id}.png"),
+                                             caption=text,
+                                             reply_markup=reply_markup,
+                                             parse_mode='MARKDOWN')
+            else:
+                await message.answer(text, reply_markup=reply_markup, parse_mode='MARKDOWN')
     else:
         await message.answer("Упс, но у вас нет желании в Wanty :(\nВы сможете создать желание по кнопке ниже",
                              reply_markup=DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP)

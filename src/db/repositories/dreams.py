@@ -21,6 +21,7 @@ class DreamRepo(Repository[Dream]):
             self,
             user_id: int,
             username: str | None = None,
+            image: bytes | None = None,
             name: str | None = None,
             description: str | None = None,
     ) -> None:
@@ -28,6 +29,7 @@ class DreamRepo(Repository[Dream]):
 
         :param user_id: Telegram user id
         :param username: Telegram username
+        :param image: Image of Dream
         :param name: Name of Dream
         :param description: Description of Dream
         """
@@ -35,6 +37,7 @@ class DreamRepo(Repository[Dream]):
             Dream(
                 user_id=user_id,
                 username=username,
+                image=image,
                 name=name,
                 description=description
             )
