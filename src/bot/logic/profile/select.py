@@ -79,7 +79,7 @@ async def edit_user_dream_handler(message: types.Message, state: FSMContext, db)
     data = await state.update_data(description=message.text)
     dream = await db.dream.get_dream_by_id(int(data['dream_id']))
     dream.data = data
-    db.session.commit()
+    await db.session.commit()
     await state.clear()
     return await message.answer(
         'Ты успешно обновил содержимое желании..\n\nОжидайте взаимных откликов',
