@@ -1,4 +1,6 @@
 """This file represents a Dreams logic."""
+from os import getenv
+
 import emoji
 import requests
 
@@ -14,6 +16,7 @@ from src.bot.structures.keyboards.dreams import (DREAMS_MAIN_BUTTONS_MARKUP, SLE
 
 from .router import dreams_router
 from src.bot.structures.fsm.dream_create import DreamGroup
+from src.bot.structures.fsm.register import RegisterGroup
 
 
 @dreams_router.message(F.text.lower() == "отмена")
@@ -32,11 +35,18 @@ async def cancel_handler(message: Message, state: FSMContext) -> None:
 
 
 @dreams_router.message(F.text.lower().startswith('создать желание'))
-async def process_create_command(message: types.Message, state: FSMContext):
-    await state.set_state(DreamGroup.name)
-    return await message.answer(
-        'Расскажи людям про свои желания\n(н-р: - Хочу путешествовать по странам)', reply_markup=CANCEL_BUTTON,
-    )
+async def process_create_command(message: types.Message, state: FSMContext, db):
+    user = await db.user.user_register_check(active_user_id=message.from_user.id)
+    if user:
+        await state.set_state(DreamGroup.name)
+        return await message.answer(
+            'Расскажи людям про свои желания\n(н-р: - Хочу путешествовать по странам)', reply_markup=CANCEL_BUTTON,
+        )
+    else:
+        await state.set_state(RegisterGroup.age)
+        return await message.answer(f'Для того чтобы создать желание, необходимо зарегистрироваться '
+                                    f'{emoji.emojize(":upside-down_face:")}\nСколько тебе лет?',
+                                    reply_markup=ReplyKeyboardRemove())
 
 
 @dreams_router.message(DreamGroup.name)
@@ -65,7 +75,7 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
         photo = data['image'][-1]
         photo_file = await message.bot.get_file(photo.file_id)
         photo_url = photo_file.file_path
-        request_url = f"https://api.telegram.org/file/bot6588244500:AAGiEK6doTmFGPk9-17i-jBbozKfjQsz8W8/{photo_url}"
+        request_url = f"https://api.telegram.org/file/bot{getenv('BOT_TOKEN')}/{photo_url}"
         response = requests.get(request_url)
         if response.status_code == 200:
             dream_image = response.content
@@ -106,11 +116,18 @@ async def dreams_view_func(dream, message):
 
 @dreams_router.message(F.text.lower().startswith('желании'))
 @dreams_router.message(Command(commands='dreams'))
-async def process_dreams_handler(message: types.Message, db):
+async def process_dreams_handler(message: types.Message, state: FSMContext, db):
     user_id = message.from_user.id
-    offset = current_record.get(user_id, 0)
-    dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset)
-    return await dreams_view_func(dream, message)
+    user = await db.user.user_register_check(active_user_id=message.from_user.id)
+    if user:
+        offset = current_record.get(user_id, 0)
+        dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset)
+        return await dreams_view_func(dream, message)
+    else:
+        await state.set_state(RegisterGroup.age)
+        return await message.answer(f'Для того чтобы посмотреть желании, необходимо зарегистрироваться '
+                                    f'{emoji.emojize(":upside-down_face:")}\nСколько тебе лет?',
+                                    reply_markup=ReplyKeyboardRemove())
 
 
 async def send_notification_to_author(author_id, dream, message):

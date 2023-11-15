@@ -1,5 +1,8 @@
 """This file represents a My Profile logic."""
+from os import getenv
 
+import emoji
+import requests
 from aiogram import types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -8,7 +11,8 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from .router import myprofile_router
 from src.bot.structures.fsm.dream_edit import DreamEditGroup
 from src.bot.structures.keyboards.dreams import (DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP,
-                                                 CANCEL_BUTTON, DREAMS_NOT_FOUND_BUTTONS_MARKUP)
+                                                 CANCEL_BUTTON, DREAMS_NOT_FOUND_BUTTONS_MARKUP,
+                                                 CANCEL_WITHOUT_IMAGE_BUTTON)
 
 
 @myprofile_router.message(F.text.lower() == "отмена")
@@ -61,13 +65,23 @@ async def myprofile_edit_dream_callback_handler(callback_query: types.CallbackQu
     await state.set_state(DreamEditGroup.name)
     await state.update_data(dream_id=dream_id)
     return await callback_query.message.answer(
-        'Напиши как ты хочешь редактировать название желании:', reply_markup=CANCEL_BUTTON,
+        f'{emoji.emojize(":speech_balloon:")} Напиши как ты хочешь редактировать название желании:',
+        reply_markup=CANCEL_BUTTON,
     )
 
 
 @myprofile_router.message(DreamEditGroup.name)
-async def edit_dream_description_handler(message: types.Message, state: FSMContext):
+async def edit_dream_name_handler(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
+    await state.set_state(DreamEditGroup.image)
+    return await message.answer(f"Отправьте изображение с желанием, оно поможет привлечь больше внимания и "
+                                f"заинтересовать больше людей {emoji.emojize(':thumbs_up:')} (не обязательное поле)",
+                                reply_markup=CANCEL_WITHOUT_IMAGE_BUTTON)
+
+
+@myprofile_router.message(DreamEditGroup.image)
+async def edit_dream_description_handler(message: types.Message, state: FSMContext):
+    await state.update_data(image=message.photo)
     await state.set_state(DreamEditGroup.description)
     return await message.answer(
         'Опиши ниже подробности желаний на которую хочешь поменять ;)', reply_markup=CANCEL_BUTTON
@@ -78,12 +92,23 @@ async def edit_dream_description_handler(message: types.Message, state: FSMConte
 async def edit_user_dream_handler(message: types.Message, state: FSMContext, db):
     data = await state.update_data(description=message.text)
     dream = await db.dream.get_dream_by_id(int(data['dream_id']))
-    dream.data = data
+    dream_image = data['image']
+    if dream_image:
+        photo = data['image'][-1]
+        photo_file = await message.bot.get_file(photo.file_id)
+        photo_url = photo_file.file_path
+        request_url = f"https://api.telegram.org/file/bot{getenv('BOT_TOKEN')}/{photo_url}"
+        response = requests.get(request_url)
+        if response.status_code == 200:
+            dream_image = response.content
+    dream.name = data['name']
+    dream.image = dream_image
+    dream.description = data['description']
     await db.session.commit()
     await state.clear()
     return await message.answer(
-        'Ты успешно обновил содержимое желании..\n\nОжидайте взаимных откликов',
-        reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP
+        '*Ты успешно обновил содержимое желании..\n\nОжидайте взаимных откликов*',
+        reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP, parse_mode="MARKDOWN"
     )
 
 
@@ -94,6 +119,6 @@ async def myprofile_delete_dream_callback_handler(callback_query: types.Callback
     if dream:
         await db.session.delete(dream)
         await db.session.commit()
-        await callback_query.message.edit_text("Желание успешно удалена")
+        await callback_query.message.answer("*Желание успешно удалена*", parse_mode='MARKDOWN')
     else:
-        await callback_query.message.edit_text("Не могу найти желание :(")
+        await callback_query.message.answer("*Не могу найти желание :(*", parse_mode='MARKDOWN')
