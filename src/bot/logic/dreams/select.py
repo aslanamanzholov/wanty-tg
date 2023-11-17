@@ -100,7 +100,7 @@ async def dreams_view_func(dream, message, gender):
     if dream:
         text = (f"\n*Тема*:  {dream.name}\n"
                 f"*Описание*:  {dream.description}\n"
-                f"*Пол*: {'М' if gender == 'Мужчина' else 'Ж'}")
+                f"*Пол*: {emoji.emojize(':man:') if gender == 'Мужчина' else emoji.emojize(':woman:')}")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,
