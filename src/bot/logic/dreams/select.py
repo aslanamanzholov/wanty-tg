@@ -97,12 +97,13 @@ current_record = {}
 
 
 async def dreams_view_func(dream, message, db):
-    dream_user_id = dream.user_id
-    dream_user = await db.user.get_user_by_id(user_id=dream_user_id)
     if dream:
-        text = (f"\n*Тема*:  {dream.name}\n"
-                f"*Описание*:  {dream.description}\n"
-                f"*Имя автора*:  {dream_user.name} {emoji.emojize(':man:') if dream_user.gender == 'Мужчина' else emoji.emojize(':woman:')}")
+        dream_user_id = dream.user_id
+        dream_user = await db.user.get_user_by_id(user_id=dream_user_id)
+        text = (f"\n*Тема*: {dream.name}\n"
+                f"*Описание*: {dream.description}\n"
+                f"*Имя автора*: {dream_user.name if dream_user.name else 'Без имени'} "
+                f"{emoji.emojize(':man:') if dream_user.gender == 'Мужчина' else emoji.emojize(':woman:')}")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,
@@ -207,7 +208,6 @@ async def process_dislike_command(message: types.Message, db):
     user_id = message.from_user.id
     offset = current_record.get(user_id, 0)
     current_record[user_id] = offset + 1
-    user = await db.user.user_register_check(active_user_id=user_id)
     dreams = await db.dream.get_dream(user_id=message.from_user.id, offset=offset + 1)
     return await dreams_view_func(dream=dreams, message=message, db=db)
 
