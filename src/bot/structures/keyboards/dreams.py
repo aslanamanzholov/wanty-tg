@@ -4,9 +4,9 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 DREAMS_MAIN_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text=f"Создать желание {emoji.emojize(':thought_balloon:')}")],
         [KeyboardButton(text=emoji.emojize(":red_heart:")),
-         KeyboardButton(text=emoji.emojize(":thumbs_down:")), KeyboardButton(text=emoji.emojize(":ZZZ:"))]
+         KeyboardButton(text=emoji.emojize(":thumbs_down:")), KeyboardButton(text=emoji.emojize(":ZZZ:"))],
+        [KeyboardButton(text=f"Создать желание {emoji.emojize(':thought_balloon:')}")]
     ],
     resize_keyboard=True
 )

@@ -137,8 +137,8 @@ async def process_dreams_handler(message: types.Message, state: FSMContext, db):
 
 
 async def send_notification_to_author(author_id, dream, message):
-    notification_message = (f"Ваше желание *{dream.name}* получило лайк.\n"
-                            f"Хотите узнать, кто это сделал?")
+    notification_message = (f"Ваше желание {dream.name} было лайкнуто! {emoji.emojize(':thumbs_up:')}\n"
+                            f"Хотите узнать, кто выразил поддержку? {emoji.emojize(':smiling_face_with_smiling_eyes:')}")
 
     callback_data = (f"{message.from_user.username if message.from_user.username else message.from_user.id} "
                      f"{dream.username if dream.username else dream.user_id} {message.chat.id} {dream.id}")
@@ -164,10 +164,11 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
 
         dream = await db.dream.get_dream_by_id(dream_id=dream_id)
 
-        notification_message = (f"Вот его профиль в телеграмме, выполняйте "
-                                f"ваши совместные желания:\n"
+        notification_message = (f"Вот его профиль в Telegram, выполняйте "
+                                f"ваши совместные желания: {emoji.emojize(':smiling_face_with_hearts:')}\n"
                                 f"*https://t.me/{liker_username_id}*")
         notification_for_sender_message = (f"Это автор желании *{dream.name}*, выполняйте совместные желания: "
+                                           f"{emoji.emojize(':smiling_face_with_hearts:')}\n"
                                            f"*https://t.me/{dream_username_id}*")
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,
                                               reply_markup=ReplyKeyboardRemove(), parse_mode='MARKDOWN')
