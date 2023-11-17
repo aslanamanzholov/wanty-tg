@@ -172,11 +172,16 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,
                                               reply_markup=ReplyKeyboardRemove(), parse_mode='MARKDOWN')
 
+        await callback_query.message.bot.edit_message_reply_markup(
+            chat_id=callback_query.message.chat.id,
+            message_id=callback_query.message.message_id,
+            reply_markup=None
+        )
+
         await callback_query.message.answer(notification_message, reply_markup=ReplyKeyboardRemove(),
                                             parse_mode='MARKDOWN')
     else:
         user_id = callback_query.message.from_user.id
-        user = await db.user.user_register_check(active_user_id=user_id)
         offset = current_record.get(user_id, 0)
         dream = await db.dream.get_dream(user_id=callback_query.message.from_user.id, offset=offset)
         return await dreams_view_func(dream=dream, message=callback_query.message, db=db)
