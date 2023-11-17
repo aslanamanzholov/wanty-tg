@@ -98,11 +98,11 @@ current_record = {}
 
 async def dreams_view_func(dream, message, db):
     dream_user_id = dream.user_id
-    dream_user = await db.user.user_register_check(active_user_id=dream_user_id)
+    dream_user = await db.user.get_user_by_id(user_id=dream_user_id)
     if dream:
         text = (f"\n*Тема*:  {dream.name}\n"
                 f"*Описание*:  {dream.description}\n"
-                f"*Пол*: {emoji.emojize(':man:') if dream_user.gender == 'Мужчина' else emoji.emojize(':woman:')}")
+                f"*Имя автора*:  {dream_user.name} {emoji.emojize(':man:') if dream_user.gender == 'Мужчина' else emoji.emojize(':woman:')}")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,

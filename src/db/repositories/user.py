@@ -62,4 +62,10 @@ class UserRepo(Repository[User]):
             select(self.type_model).where(User.user_id == active_user_id).limit(1)
         )).one_or_none()
 
+    async def get_user_by_id(self, user_id: int):
+        """Get user masseuse by id."""
+        statement = select(self.type_model).where(self.type_model.id == int(user_id))
+
+        return (await self.session.scalars(statement)).first()
+
 
