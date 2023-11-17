@@ -162,7 +162,7 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
         chat_id = callback_query.data.split(' ')[3]
         dream_id = callback_query.data.split(' ')[4]
 
-        dream = db.dream.get_dream_by_id(dream_id=dream_id)
+        dream = await db.dream.get_dream_by_id(dream_id=dream_id)
 
         notification_message = (f"Вот его профиль в телеграмме, выполняйте "
                                 f"ваши совместные желания:\n"
