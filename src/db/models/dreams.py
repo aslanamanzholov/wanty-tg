@@ -25,3 +25,26 @@ class Dream(Base):
     description: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
+
+
+class DreamLikedRecord(Base):
+    """DreamLikedRecordRepo model."""
+
+    author_user_id: Mapped[int] = mapped_column(
+        sa.BigInteger, unique=False, nullable=False
+    )
+    author_username: Mapped[int] = mapped_column(
+        sa.Text, unique=False, nullable=True
+    )
+    liked_user_id: Mapped[int] = mapped_column(
+        sa.BigInteger, unique=False, nullable=False
+    )
+    liked_username: Mapped[int] = mapped_column(
+        sa.Text, unique=False, nullable=True
+    )
+    dream_name: Mapped[str] = mapped_column(
+        sa.Text, unique=False, nullable=True
+    )
+    type_feedback: Mapped[str] = mapped_column(
+        sa.Text, unique=False, nullable=True
+    )

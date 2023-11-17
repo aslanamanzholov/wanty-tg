@@ -1,13 +1,12 @@
 """Dream repository file."""
-import logging
 from collections.abc import Sequence
-from typing import Any
 
-from sqlalchemy import select, ScalarResult, delete, CursorResult
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import Base, Dream, User
 from .abstract import Repository
+from src.db.models import Base
+from src.db.models.dreams import Dream, DreamLikedRecord
 
 
 class DreamRepo(Repository[Dream]):
@@ -67,3 +66,41 @@ class DreamRepo(Repository[Dream]):
         statement = select(self.type_model).where(Dream.id == int(dream_id))
 
         return (await self.session.scalars(statement)).first()
+
+
+class DreamLikedRecordRepo(Repository[DreamLikedRecord]):
+    """Dream Liked Record repository for CRUD and other SQL queries."""
+
+    def __init__(self, session: AsyncSession):
+        """Initialize user repository as for all users or only for one user."""
+        super().__init__(type_model=DreamLikedRecord, session=session)
+
+    async def new(
+            self,
+            author_user_id: int,
+            liked_user_id: int,
+            author_username: str | None = None,
+            liked_username: str | None = None,
+            dream_name: str | None = None,
+            type_feedback: str | None = None,
+    ) -> None:
+        """Insert a new user into the database.
+
+        :param author_user_id: Author user id
+        :param author_username: Author username
+        :param liked_user_id: Liked User id of Dream
+        :param liked_username: Liked Username of Dream
+        :param dream_name: Name of Dream
+        :param type_feedback: Type Feedback of Dream
+        """
+        await self.session.merge(
+            DreamLikedRecord(
+                author_user_id=author_user_id,
+                author_username=author_username,
+                liked_user_id=liked_user_id,
+                liked_username=liked_username,
+                dream_name=dream_name,
+                type_feedback=type_feedback
+            )
+        )
+        await self.session.commit()

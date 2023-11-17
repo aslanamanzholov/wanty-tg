@@ -178,6 +178,15 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
             reply_markup=None
         )
 
+        await db.dream_liked_record.new(
+            author_user_id=dream_username_id,
+            author_username=dream_username_id,
+            liked_user_id=liker_username_id,
+            liked_username=liker_username_id,
+            dream_name=dream.name,
+            type_feedback="share_contact"
+        )
+
         await callback_query.message.answer(notification_message, reply_markup=ReplyKeyboardRemove(),
                                             parse_mode='MARKDOWN')
     else:
@@ -202,8 +211,6 @@ async def process_like_command(message: types.Message, db):
         await send_notification_to_author(author_id, dream, message)
 
     next_dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset + 1)
-
-    user = await db.user.user_register_check(active_user_id=user_id)
 
     return await dreams_view_func(dream=next_dream, message=message, db=db)
 
