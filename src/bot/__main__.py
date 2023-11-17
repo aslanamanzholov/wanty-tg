@@ -5,14 +5,17 @@ import logging
 from aiogram import Bot
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redis.asyncio.client import Redis
 
+from bot.logic.dreams import periodic_dream_notification
 from src.bot.dispatcher import get_dispatcher, get_redis_storage
-from src.bot.middlewares.database_md import DatabaseMiddleware
 from src.bot.structures.data_structure import TransferData
 from src.bot.logic.bot_commands import bot_commands
 from src.configuration import conf
 from src.db.database import create_async_engine
+
+scheduler = AsyncIOScheduler()
 
 
 async def start_bot():
@@ -32,9 +35,13 @@ async def start_bot():
     for cmd in bot_commands:
         commands_for_bot.append(BotCommand(command=cmd[0], description=cmd[1]))
 
+    scheduler.start()
+    scheduler.add_job(periodic_dream_notification, "interval", days=3)
+
     await bot.set_my_commands(commands=commands_for_bot)
 
     dp = get_dispatcher(storage=MemoryStorage())
+
     await dp.start_polling(
         bot,
         allowed_updates=dp.resolve_used_update_types(),

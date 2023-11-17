@@ -68,4 +68,10 @@ class UserRepo(Repository[User]):
 
         return (await self.session.scalars(statement)).first()
 
+    async def get_all_user_id(self):
+        """Get user by id."""
+        statement = select(self.type_model)
+
+        return (await self.session.scalars(statement)).all()
+
 
