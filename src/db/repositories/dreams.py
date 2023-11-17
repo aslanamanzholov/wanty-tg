@@ -64,6 +64,6 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream_by_id(self, dream_id: int):
         """Get user dreams by id."""
-        statement = select(self.type_model).where(Dream.id == dream_id)
+        statement = select(self.type_model).where(Dream.id == int(dream_id))
 
         return (await self.session.scalars(statement)).first()

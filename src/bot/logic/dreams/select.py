@@ -99,7 +99,8 @@ current_record = {}
 async def dreams_view_func(dream, message):
     if dream:
         text = (f"\n*Тема*:  {dream.name}\n"
-                f"*Описание*:  {dream.description}")
+                f"*Описание*:  {dream.description}\n"
+                f"*Автор*: {dream.username if dream.username else 'Не указан'}\n")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,
@@ -110,13 +111,15 @@ async def dreams_view_func(dream, message):
         else:
             await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='MARKDOWN')
     else:
-        text = 'Больше желании нет :('
+        current_record.clear()
+        text = f'Больше желании нет {emoji.emojize(":confused_face:")}'
         await message.answer(text, reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
 
 
 @dreams_router.message(F.text.lower().startswith('желании'))
 @dreams_router.message(Command(commands='dreams'))
 async def process_dreams_handler(message: types.Message, state: FSMContext, db):
+    current_record.clear()
     user_id = message.from_user.id
     user = await db.user.user_register_check(active_user_id=message.from_user.id)
     if user:
@@ -131,10 +134,11 @@ async def process_dreams_handler(message: types.Message, state: FSMContext, db):
 
 
 async def send_notification_to_author(author_id, dream, message):
-    notification_message = (f"Ваше желание <b>{dream.name}</b> получило лайк.\n"
+    notification_message = (f"Ваше желание *{dream.name}* получило лайк.\n"
                             f"Хотите узнать, кто это сделал?")
 
-    callback_data = f"{message.from_user.username if message.from_user.username else message.from_user.id} {dream.username if dream.username else dream.user_id} {message.chat.id}"
+    callback_data = (f"{message.from_user.username if message.from_user.username else message.from_user.id} "
+                     f"{dream.username if dream.username else dream.user_id} {message.chat.id} {dream.id}")
 
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -144,7 +148,7 @@ async def send_notification_to_author(author_id, dream, message):
             ]
         ]
     )
-    await message.bot.send_message(author_id, notification_message, reply_markup=reply_markup, parse_mode='HTML')
+    await message.bot.send_message(author_id, notification_message, reply_markup=reply_markup, parse_mode='MARKDOWN')
 
 
 @dreams_router.callback_query(F.data.startswith("share_contact" or "not_share_contact"))
@@ -153,14 +157,17 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
         liker_username_id = callback_query.data.split(' ')[1]
         dream_username_id = callback_query.data.split(' ')[2]
         chat_id = callback_query.data.split(' ')[3]
+        dream_id = callback_query.data.split(' ')[4]
+
+        dream = db.dream.get_dream_by_id(dream_id=dream_id)
 
         notification_message = (f"Вот его профиль в телеграмме, выполняйте "
                                 f"ваши совместные желания:\n"
-                                f"<a href='https://t.me/{liker_username_id}/'>{liker_username_id}</a>")
-        notification_for_sender_message = (f"Это автор желании, выполняйте совместные желания: "
-                                           f"<a href='https://t.me/{dream_username_id}/'>{dream_username_id}</a>")
+                                f"*https://t.me/{liker_username_id}*")
+        notification_for_sender_message = (f"Это автор желании *{dream.name}*, выполняйте совместные желания: "
+                                           f"*https://t.me/{dream_username_id}*")
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,
-                                              reply_markup=ReplyKeyboardRemove(), parse_mode='HTML')
+                                              reply_markup=ReplyKeyboardRemove(), parse_mode='MARKDOWN')
 
         return await callback_query.message.answer(notification_message, reply_markup=ReplyKeyboardRemove(),
                                                    parse_mode='HTML')
