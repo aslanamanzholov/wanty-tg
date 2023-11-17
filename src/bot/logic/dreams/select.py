@@ -171,7 +171,7 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
                                            f"{emoji.emojize(':smiling_face_with_hearts:')}\n"
                                            f"*https://t.me/{dream_username_id}*")
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,
-                                              reply_markup=ReplyKeyboardRemove(), parse_mode='MARKDOWN')
+                                              reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='MARKDOWN')
 
         await callback_query.message.bot.edit_message_reply_markup(
             chat_id=callback_query.message.chat.id,
