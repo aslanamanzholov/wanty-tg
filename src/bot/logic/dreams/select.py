@@ -96,11 +96,11 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
 current_record = {}
 
 
-async def dreams_view_func(dream, message):
+async def dreams_view_func(dream, message, gender):
     if dream:
         text = (f"\n*Тема*:  {dream.name}\n"
                 f"*Описание*:  {dream.description}\n"
-                f"*Автор*: {dream.username if dream.username else 'Не указан'}\n")
+                f"*Пол*: {'М' if gender == 'Мужчина' else 'Ж'}")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,
@@ -125,7 +125,7 @@ async def process_dreams_handler(message: types.Message, state: FSMContext, db):
     if user:
         offset = current_record.get(user_id, 0)
         dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset)
-        return await dreams_view_func(dream, message)
+        return await dreams_view_func(dream=dream, message=message, gender=user.gender)
     else:
         await state.set_state(RegisterGroup.age)
         return await message.answer(f'Для того чтобы посмотреть желании, необходимо зарегистрироваться '
@@ -173,9 +173,10 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
                                                    parse_mode='HTML')
     else:
         user_id = callback_query.message.from_user.id
+        user = await db.user.user_register_check(active_user_id=user_id)
         offset = current_record.get(user_id, 0)
         dream = await db.dream.get_dream(user_id=callback_query.message.from_user.id, offset=offset)
-        return await dreams_view_func(dream, callback_query.message)
+        return await dreams_view_func(dream=dream, message=callback_query.message, gender=user.gender)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":red_heart:"))
@@ -194,7 +195,9 @@ async def process_like_command(message: types.Message, db):
 
     next_dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset + 1)
 
-    return await dreams_view_func(next_dream, message)
+    user = await db.user.user_register_check(active_user_id=user_id)
+
+    return await dreams_view_func(dream=next_dream, message=message, gender=user.gender)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":thumbs_down:"))
@@ -202,8 +205,9 @@ async def process_dislike_command(message: types.Message, db):
     user_id = message.from_user.id
     offset = current_record.get(user_id, 0)
     current_record[user_id] = offset + 1
+    user = await db.user.user_register_check(active_user_id=user_id)
     dreams = await db.dream.get_dream(user_id=message.from_user.id, offset=offset + 1)
-    return await dreams_view_func(dreams, message)
+    return await dreams_view_func(dream=dreams, message=message, gender=user.gender)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":ZZZ:"))
