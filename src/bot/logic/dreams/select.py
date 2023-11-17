@@ -17,6 +17,7 @@ from src.bot.structures.keyboards.dreams import (DREAMS_MAIN_BUTTONS_MARKUP, SLE
 from .router import dreams_router
 from src.bot.structures.fsm.dream_create import DreamGroup
 from src.bot.structures.fsm.register import RegisterGroup
+from src.bot.structures.keyboards.menu import MENU_KEYBOARD
 
 
 @dreams_router.message(F.text.lower() == "отмена")
@@ -114,7 +115,6 @@ async def dreams_view_func(dream, message, db):
         else:
             await message.answer(text, reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='MARKDOWN')
     else:
-        current_record.clear()
         text = f'Больше желании нет {emoji.emojize(":confused_face:")}'
         await message.answer(text, reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
 
@@ -122,7 +122,6 @@ async def dreams_view_func(dream, message, db):
 @dreams_router.message(F.text.lower().startswith('желании'))
 @dreams_router.message(Command(commands='dreams'))
 async def process_dreams_handler(message: types.Message, state: FSMContext, db):
-    current_record.clear()
     user_id = message.from_user.id
     user = await db.user.user_register_check(active_user_id=message.from_user.id)
     if user:
@@ -171,7 +170,7 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
                                            f"{emoji.emojize(':smiling_face_with_hearts:')}\n"
                                            f"*https://t.me/{dream_username_id}*")
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,
-                                              reply_markup=DREAMS_MAIN_BUTTONS_MARKUP, parse_mode='MARKDOWN')
+                                              reply_markup=MENU_KEYBOARD, parse_mode='MARKDOWN')
 
         await callback_query.message.bot.edit_message_reply_markup(
             chat_id=callback_query.message.chat.id,
