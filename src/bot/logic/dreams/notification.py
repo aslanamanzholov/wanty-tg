@@ -2,7 +2,7 @@ import emoji
 from aiogram import Bot
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.structures.keyboards.menu import MENU_KEYBOARD
+from src.bot.structures.keyboards.menu import MENU_KEYBOARD
 from configuration import conf
 from src.db.database import create_async_engine, Database
 
