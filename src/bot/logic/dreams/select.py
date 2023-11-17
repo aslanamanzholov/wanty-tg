@@ -96,11 +96,13 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
 current_record = {}
 
 
-async def dreams_view_func(dream, message, gender):
+async def dreams_view_func(dream, message, db):
+    dream_user_id = dream.user_id
+    dream_user = await db.user.user_register_check(active_user_id=dream_user_id)
     if dream:
         text = (f"\n*Тема*:  {dream.name}\n"
                 f"*Описание*:  {dream.description}\n"
-                f"*Пол*: {emoji.emojize(':man:') if gender == 'Мужчина' else emoji.emojize(':woman:')}")
+                f"*Пол*: {emoji.emojize(':man:') if dream_user.gender == 'Мужчина' else emoji.emojize(':woman:')}")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,
@@ -125,7 +127,7 @@ async def process_dreams_handler(message: types.Message, state: FSMContext, db):
     if user:
         offset = current_record.get(user_id, 0)
         dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset)
-        return await dreams_view_func(dream=dream, message=message, gender=user.gender)
+        return await dreams_view_func(dream=dream, message=message, db=db)
     else:
         await state.set_state(RegisterGroup.age)
         return await message.answer(f'Для того чтобы посмотреть желании, необходимо зарегистрироваться '
@@ -169,14 +171,14 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,
                                               reply_markup=ReplyKeyboardRemove(), parse_mode='MARKDOWN')
 
-        return await callback_query.message.answer(notification_message, reply_markup=ReplyKeyboardRemove(),
-                                                   parse_mode='HTML')
+        await callback_query.message.answer(notification_message, reply_markup=ReplyKeyboardRemove(),
+                                            parse_mode='MARKDOWN')
     else:
         user_id = callback_query.message.from_user.id
         user = await db.user.user_register_check(active_user_id=user_id)
         offset = current_record.get(user_id, 0)
         dream = await db.dream.get_dream(user_id=callback_query.message.from_user.id, offset=offset)
-        return await dreams_view_func(dream=dream, message=callback_query.message, gender=user.gender)
+        return await dreams_view_func(dream=dream, message=callback_query.message, db=db)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":red_heart:"))
@@ -197,7 +199,7 @@ async def process_like_command(message: types.Message, db):
 
     user = await db.user.user_register_check(active_user_id=user_id)
 
-    return await dreams_view_func(dream=next_dream, message=message, gender=user.gender)
+    return await dreams_view_func(dream=next_dream, message=message, db=db)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":thumbs_down:"))
@@ -207,7 +209,7 @@ async def process_dislike_command(message: types.Message, db):
     current_record[user_id] = offset + 1
     user = await db.user.user_register_check(active_user_id=user_id)
     dreams = await db.dream.get_dream(user_id=message.from_user.id, offset=offset + 1)
-    return await dreams_view_func(dream=dreams, message=message, gender=user.gender)
+    return await dreams_view_func(dream=dreams, message=message, db=db)
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":ZZZ:"))

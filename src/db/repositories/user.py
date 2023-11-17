@@ -60,6 +60,6 @@ class UserRepo(Repository[User]):
         """Get user register check by id."""
         return (await self.session.scalars(
             select(self.type_model).where(User.user_id == active_user_id).limit(1)
-        )).one_or_none()
+        )).first()
 
 
