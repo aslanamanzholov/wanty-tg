@@ -1,7 +1,7 @@
 """Dream repository file."""
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .abstract import Repository
@@ -45,7 +45,8 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        statement = select(self.type_model).where(Dream.user_id != user_id).offset(offset).limit(limit)
+        statement = (select(self.type_model).where(Dream.user_id != user_id).order_by(func.random())
+                     .offset(offset).limit(limit))
 
         return (await self.session.scalars(statement)).first()
 
