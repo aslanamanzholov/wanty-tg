@@ -95,10 +95,8 @@ class DreamLikedRecordRepo(Repository[DreamLikedRecord]):
         """
         await self.session.merge(
             DreamLikedRecord(
-                author_user_id=author_user_id,
-                author_username=author_username,
-                liked_user_id=liked_user_id,
-                liked_username=liked_username,
+                author_username_id=author_username,
+                liked_username_id=liked_username,
                 dream_name=dream_name,
                 type_feedback=type_feedback
             )
