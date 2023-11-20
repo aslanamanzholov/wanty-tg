@@ -2,6 +2,7 @@ import emoji
 from aiogram import Bot
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from bot.logic.dreams import current_record
 from src.bot.structures.keyboards.menu import MENU_KEYBOARD
 from src.configuration import conf
 from src.db.database import create_async_engine, Database
@@ -17,3 +18,7 @@ async def periodic_dream_notification():
                                              f"Только активные пользователи узнают все тайны Wanty. Будь среди первых! "
                                              f"{emoji.emojize(':thought_balloon:')}",
                                reply_markup=MENU_KEYBOARD, parse_mode="MARKDOWN")
+
+
+async def clear_current_records():
+    current_record.clear()

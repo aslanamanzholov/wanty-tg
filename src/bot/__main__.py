@@ -1,26 +1,34 @@
 """This file represent startup bot logic."""
 import asyncio
 import logging
+from datetime import datetime
 
 from aiogram import Bot
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
+from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redis.asyncio.client import Redis
 
-from src.bot.logic.dreams import periodic_dream_notification
+from src.bot.logic.dreams import periodic_dream_notification, clear_current_records
 from src.bot.dispatcher import get_dispatcher, get_redis_storage
 from src.bot.structures.data_structure import TransferData
 from src.bot.logic.bot_commands import bot_commands
 from src.configuration import conf
 from src.db.database import create_async_engine
 
-scheduler = AsyncIOScheduler()
-
 
 async def start_bot():
     """This function will start bot with polling mode."""
     bot = Bot(token=conf.bot.token)
+    job_stores = {
+        "default": RedisJobStore(
+            jobs_key="dispatched_trips_jobs", run_times_key="dispatched_trips_running",
+            host=conf.redis.host, port=conf.redis.port,
+            username=conf.redis.username,
+            password=conf.redis.passwd
+        )
+    }
     storage = get_redis_storage(
         redis=Redis(
             db=conf.redis.db,
@@ -35,8 +43,11 @@ async def start_bot():
     for cmd in bot_commands:
         commands_for_bot.append(BotCommand(command=cmd[0], description=cmd[1]))
 
+    scheduler = AsyncIOScheduler(jobstores=job_stores)
+
     scheduler.start()
-    scheduler.add_job(periodic_dream_notification, "interval", days=3)
+    scheduler.add_job(periodic_dream_notification, "interval", days=3, next_run_time=datetime.now())
+    scheduler.add_job(clear_current_records, "interval", days=1, next_run_time=datetime.now())
 
     await bot.set_my_commands(commands=commands_for_bot)
 
