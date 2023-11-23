@@ -1,7 +1,6 @@
 """This file represent startup bot logic."""
 import asyncio
 import logging
-from datetime import datetime
 
 from aiogram import Bot
 from aiogram.fsm.storage.memory import MemoryStorage
