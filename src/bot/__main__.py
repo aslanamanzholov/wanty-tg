@@ -50,7 +50,7 @@ async def start_bot():
 
     await bot.set_my_commands(commands=commands_for_bot)
 
-    dp = get_dispatcher(storage=MemoryStorage())
+    dp = get_dispatcher(storage=storage)
 
     await dp.start_polling(
         bot,
