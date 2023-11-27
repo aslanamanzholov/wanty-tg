@@ -45,8 +45,8 @@ async def start_bot():
     scheduler = AsyncIOScheduler(jobstores=job_stores)
 
     scheduler.start()
-    scheduler.add_job(periodic_dream_notification, "interval", days=3)
-    scheduler.add_job(clear_current_records, "interval", days=1)
+    scheduler.add_job(periodic_dream_notification, "interval", days=5)
+    scheduler.add_job(clear_current_records, "interval", days=2)
 
     await bot.set_my_commands(commands=commands_for_bot)
 
