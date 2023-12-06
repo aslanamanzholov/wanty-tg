@@ -1,4 +1,5 @@
 """This file represents a Dreams logic."""
+from datetime import datetime, timezone
 from os import getenv
 
 import emoji
@@ -101,11 +102,25 @@ async def dreams_view_func(dream, message, db):
     if dream:
         dream_user_id = dream.user_id
         dream_user = await db.user.get_user_by_id(user_id=dream_user_id)
-        user_gender = emoji.emojize(':man:') if dream_user and dream_user.gender == 'Мужчина' else emoji.emojize(':woman:')
+        user_gender = emoji.emojize(':man:') if dream_user and dream_user.gender == 'Мужчина' \
+            else emoji.emojize(':woman:')
+        current_time = datetime.utcnow().replace(tzinfo=timezone.utc)
+        time_difference = current_time - dream.created_at
+        if time_difference.days > 0:
+            time_difference_result = f"{time_difference.days} дней"
+        else:
+            hours, remainder = divmod(time_difference.seconds, 3600)
+            minutes = remainder // 60
+            if hours < 0:
+                time_difference_result = f"{hours} часов"
+            else:
+                time_difference_result = f"{minutes} минут"
+
         text = (f"\n*Тема*: {dream.name}\n"
                 f"*Описание*: {dream.description}\n"
                 f"*Город*: {dream_user.country if dream_user else 'Другой'}\n"
-                f"*Автор*: {dream_user.name if dream_user else 'Анонимный'} {user_gender}")
+                f"*Автор*: {dream_user.name if dream_user else 'Анонимный'} {user_gender}\n"
+                f"*в Wanty*: {time_difference_result}")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,
@@ -210,6 +225,14 @@ async def process_like_command(message: types.Message, db):
     author_id = dream.user_id if dream else None
     if author_id:
         await send_notification_to_author(author_id, dream, message)
+
+    await db.dream_liked_record.new(
+        author_user_id=author_id,
+        liked_user_id=message.from_user.id,
+        liked_username=message.from_user.username,
+        dream_name=dream.name,
+        type_feedback="liked"
+    )
 
     next_dream = await db.dream.get_dream(user_id=message.from_user.id, offset=offset + 1)
 
