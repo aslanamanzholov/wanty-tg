@@ -111,10 +111,12 @@ async def dreams_view_func(dream, message, db):
         else:
             hours, remainder = divmod(time_difference.seconds, 3600)
             minutes = remainder // 60
+            hours_word = "час" if hours == 1 else "часа" if 1 < hours < 5 else "часов"
+            minutes_word = "минута" if minutes == 1 else "минуты" if 1 < minutes < 5 else "минут"
             if hours < 0:
-                time_difference_result = f"{hours} часов"
+                time_difference_result = f"{hours} {hours_word}"
             else:
-                time_difference_result = f"{minutes} минут"
+                time_difference_result = f"{minutes} {minutes_word}"
 
         text = (f"\n*Тема*: {dream.name}\n"
                 f"*Описание*: {dream.description}\n"
