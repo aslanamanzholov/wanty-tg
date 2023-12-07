@@ -47,7 +47,7 @@ class DreamRepo(Repository[Dream]):
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
         all_records = (select(self.type_model).where(Dream.user_id != user_id)
-                       .offset(offset).limit(limit))
+                       .offset(offset))
 
         all_records_list = list((await self.session.execute(all_records)).scalars())
         random.shuffle(all_records_list)
