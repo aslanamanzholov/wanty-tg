@@ -212,7 +212,7 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
             type_feedback="share_contact"
         )
 
-        await callback_query.message.answer(notification_message, reply_markup=ReplyKeyboardRemove(),
+        await callback_query.message.answer(notification_message, reply_markup=MENU_KEYBOARD,
                                             parse_mode='MARKDOWN')
     else:
         user_id = callback_query.message.from_user.id
