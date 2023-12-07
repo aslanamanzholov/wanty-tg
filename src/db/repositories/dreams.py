@@ -64,7 +64,8 @@ class DreamRepo(Repository[Dream]):
             .offset(offset)
         )
 
-        selected_records = (await self.session.execute(statement)).scalars().all()
+        result = await self.session.execute(statement)
+        selected_records = result.scalars().all()
 
         return selected_records[0] if selected_records else None
 
