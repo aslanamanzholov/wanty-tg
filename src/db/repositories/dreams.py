@@ -46,8 +46,23 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        statement = (select(self.type_model).where(Dream.user_id != user_id).offset(offset).limit(limit)
-                     .order_by(func.random()))
+        random_index = func.floor(func.random() * func.count().over().label("max_count")).label("random_index")
+
+        subquery = (
+            select([self.type_model, random_index])
+            .where(Dream.user_id != user_id)
+            .order_by(func.random())
+            .group_by(self.type_model.id)
+            .limit(limit)
+            .offset(offset)
+        ).alias("subquery")
+
+        statement = (
+            select(subquery)
+            .order_by(subquery.c.random_index)
+            .limit(limit)
+            .offset(offset)
+        )
 
         selected_records = (await self.session.execute(statement)).scalars().all()
 
