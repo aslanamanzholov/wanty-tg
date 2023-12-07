@@ -106,8 +106,10 @@ async def dreams_view_func(dream, message, db):
             else emoji.emojize(':woman:')
         current_time = datetime.utcnow().replace(tzinfo=timezone.utc)
         time_difference = current_time - dream.created_at
-        if time_difference.days > 0:
-            time_difference_result = f"{time_difference.days} дней"
+        days = time_difference.days
+        if days > 0:
+            days_word = "день" if days == 1 else "дня" if 1 < days < 5 else "дней"
+            time_difference_result = f"{time_difference.days} {days_word}"
         else:
             hours, remainder = divmod(time_difference.seconds, 3600)
             minutes = remainder // 60
