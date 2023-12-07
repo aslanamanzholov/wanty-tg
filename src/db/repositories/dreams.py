@@ -58,7 +58,7 @@ class DreamRepo(Repository[Dream]):
         ).alias("subquery")
 
         statement = (
-            select(subquery)
+            select(subquery.c)
             .order_by(subquery.c.random_index)
             .limit(limit)
             .offset(offset)
