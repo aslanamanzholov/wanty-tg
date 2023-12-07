@@ -2,7 +2,7 @@
 import random
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .abstract import Repository
@@ -46,13 +46,10 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        all_records = (select(self.type_model).where(Dream.user_id != user_id).order_by(self.type_model.id)
-                       .offset(offset))
+        statement = (select(self.type_model).where(Dream.user_id != user_id).offset(offset).limit(limit)
+                     .order_by(func.random()))
 
-        all_records_list = list((await self.session.execute(all_records)).scalars())
-        random.shuffle(all_records_list)
-
-        selected_records = all_records_list[:limit]
+        selected_records = (await self.session.execute(statement)).scalars().all()
 
         return selected_records[0] if selected_records else None
 
