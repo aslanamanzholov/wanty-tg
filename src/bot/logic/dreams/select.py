@@ -1,4 +1,5 @@
 """This file represents a Dreams logic."""
+import logging
 from datetime import datetime, timezone
 from os import getenv
 
@@ -6,6 +7,7 @@ import emoji
 import requests
 
 from aiogram import types
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters import Command
 from aiogram import F
 from aiogram.fsm.context import FSMContext
@@ -156,21 +158,24 @@ async def process_dreams_handler(message: types.Message, state: FSMContext, db):
 
 
 async def send_notification_to_author(author_id, dream, message):
-    notification_message = (f"Ваше желание {dream.name} было лайкнуто! {emoji.emojize(':thumbs_up:')}\n"
-                            f"Хотите узнать, кто выразил поддержку? {emoji.emojize(':smiling_face_with_smiling_eyes:')}")
+    try:
+        notification_message = (f"Ваше желание {dream.name} было лайкнуто! {emoji.emojize(':thumbs_up:')}\n"
+                                f"Хотите узнать, кто выразил поддержку? {emoji.emojize(':smiling_face_with_smiling_eyes:')}")
 
-    callback_data = (f"{message.from_user.username if message.from_user.username else message.from_user.id} "
-                     f"{dream.username if dream.username else dream.user_id} {message.chat.id} {dream.id}")
+        callback_data = (f"{message.from_user.username if message.from_user.username else message.from_user.id} "
+                         f"{dream.username if dream.username else dream.user_id} {message.chat.id} {dream.id}")
 
-    reply_markup = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text='Да', callback_data=f"share_contact {callback_data}"),
-                InlineKeyboardButton(text='Нет', callback_data=f"not_share_contact {callback_data}")
+        reply_markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Да', callback_data=f"share_contact {callback_data}"),
+                    InlineKeyboardButton(text='Нет', callback_data=f"not_share_contact {callback_data}")
+                ]
             ]
-        ]
-    )
-    await message.bot.send_message(author_id, notification_message, reply_markup=reply_markup, parse_mode='MARKDOWN')
+        )
+        await message.bot.send_message(author_id, notification_message, reply_markup=reply_markup, parse_mode='MARKDOWN')
+    except TelegramForbiddenError as e:
+        logging.error(e)
 
 
 @dreams_router.callback_query(F.data.startswith("share_contact" or "not_share_contact"))
