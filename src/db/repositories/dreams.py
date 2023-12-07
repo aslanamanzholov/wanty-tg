@@ -47,12 +47,11 @@ class DreamRepo(Repository[Dream]):
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
         all_records = (select(self.type_model).where(Dream.user_id != user_id).order_by(self.type_model.id)
-                     .offset(offset).limit(limit))
+                       .offset(offset).limit(limit))
 
         all_records_list = list((await self.session.execute(all_records)).scalars())
         random.shuffle(all_records_list)
 
-        # Теперь вы можете взять нужное количество записей
         selected_records = all_records_list[:limit]
 
         return selected_records[0] if selected_records else None
