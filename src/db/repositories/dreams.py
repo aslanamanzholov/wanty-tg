@@ -46,24 +46,10 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        cte = (
-            select([self.type_model, func.row_number().over(order_by=func.random()).label("random_row")])
-            .where(Dream.user_id != user_id)
-            .limit(limit)
-            .offset(offset)
-        ).cte("cte")
+        statement = (select(self.type_model).where(Dream.user_id != user_id).offset(offset).limit(limit)
+                     .order_by(func.random()))
 
-        statement = (
-            select(cte.c)
-            .order_by(cte.c.random_row)
-            .limit(limit)
-            .offset(offset)
-        )
-
-        result = await self.session.execute(statement)
-        selected_records = result.scalars().all()
-
-        return selected_records[0] if selected_records else None
+        return (await self.session.execute(statement)).scalars().first()
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
