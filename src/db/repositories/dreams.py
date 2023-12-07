@@ -1,7 +1,8 @@
 """Dream repository file."""
+import random
 from collections.abc import Sequence
 
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .abstract import Repository
@@ -45,10 +46,16 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        statement = (select(self.type_model).where(Dream.user_id != user_id).offset(offset).limit(limit)
-                     .order_by(func.random() * func.random()))
+        all_records = (select(self.type_model).where(Dream.user_id != user_id).order_by(self.type_model.id)
+                     .offset(offset).limit(limit))
 
-        return (await self.session.scalars(statement)).first()
+        all_records_list = list((await self.session.execute(all_records)).scalars())
+        random.shuffle(all_records_list)
+
+        # Теперь вы можете взять нужное количество записей
+        selected_records = all_records_list[:limit]
+
+        return selected_records[0] if selected_records else None
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
