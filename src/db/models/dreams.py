@@ -28,8 +28,12 @@ class Dream(Base):
     description: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
-    created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    created_at = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at = mapped_column(
+        DateTime(timezone=True), onupdate=func.now()
+    )
 
 
 class DreamLikedRecord(Base):
@@ -47,5 +51,9 @@ class DreamLikedRecord(Base):
     type_feedback: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
-    created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    created_at = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at = mapped_column(
+        DateTime(timezone=True), onupdate=func.now()
+    )
