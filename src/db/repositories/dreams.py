@@ -2,7 +2,7 @@
 import random
 from collections.abc import Sequence
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .abstract import Repository
@@ -46,11 +46,23 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        statement = (select(self.type_model).order_by(Dream.created_at.desc()).where(Dream.user_id != user_id)
-                     .offset(offset)
-                     .limit(limit))
+        subquery = (
+            select(self.type_model)
+            .order_by(func.random())
+            .where(Dream.user_id != user_id)
+            .offset(offset)
+            .limit(limit)
+            .alias("subquery")
+        )
 
-        return (await self.session.scalars(statement)).first()
+        main_query = (
+            select(subquery)
+            .order_by(desc(subquery.c.created_at))  # Пример с сортировкой по убыванию по полю created_at
+        )
+
+        result = (await self.session.scalars(main_query)).first()
+
+        return result
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
