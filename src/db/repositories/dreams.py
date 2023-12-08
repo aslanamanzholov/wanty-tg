@@ -1,8 +1,7 @@
 """Dream repository file."""
-import random
 from collections.abc import Sequence
 
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .abstract import Repository
@@ -48,21 +47,16 @@ class DreamRepo(Repository[Dream]):
         """Get dream"""
         subquery = (
             select(self.type_model)
-            .order_by(func.random())
             .where(Dream.user_id != user_id)
             .offset(offset)
             .limit(limit)
-            .alias("subquery")
         )
-
         main_query = (
             select(subquery)
-            .order_by(desc(subquery.c.created_at))  # Пример с сортировкой по убыванию по полю created_at
+            .order_by(func.random())
         )
 
-        result = (await self.session.scalars(main_query)).first()
-
-        return result
+        return (await self.session.scalars(main_query)).first()
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
