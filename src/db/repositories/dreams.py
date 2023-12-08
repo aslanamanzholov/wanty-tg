@@ -52,7 +52,7 @@ class DreamRepo(Repository[Dream]):
             .limit(limit)
         )
 
-        return (await self.session.execute(statement.order_by(Dream.created_at.desc()))).scalars().first()
+        return (await self.session.scalars(statement)).first()
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
