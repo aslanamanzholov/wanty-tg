@@ -49,7 +49,7 @@ class DreamRepo(Repository[Dream]):
             select(self.type_model)
             .where(Dream.user_id != user_id)
             .offset(offset)
-            .limit(limit)
+            .limit(limit).subquery()
         )
         main_query = (
             select(subquery)
