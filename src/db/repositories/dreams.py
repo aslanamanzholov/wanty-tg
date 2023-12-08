@@ -47,7 +47,7 @@ class DreamRepo(Repository[Dream]):
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
         statement = (select(self.type_model).where(Dream.user_id != user_id).offset(offset).limit(limit)
-                     .order_by(func.random()))
+                     .order_by(Dream.created_at.desc()))
 
         return (await self.session.scalars(statement)).first()
 
