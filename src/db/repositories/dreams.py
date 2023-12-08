@@ -45,18 +45,14 @@ class DreamRepo(Repository[Dream]):
 
     async def get_dream(self, user_id, offset, limit: int = 1):
         """Get dream"""
-        subquery = (
+        statement = (
             select(self.type_model)
             .where(Dream.user_id != user_id)
             .offset(offset)
-            .limit(limit).subquery()
-        )
-        main_query = (
-            select(subquery)
-            .order_by(func.random())
-        )
+            .limit(limit)
+        ).order_by(func.random())
 
-        return (await self.session.scalars(main_query)).first()
+        return (await self.session.scalars(statement)).first()
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
