@@ -50,9 +50,9 @@ class DreamRepo(Repository[Dream]):
             .where(Dream.user_id != user_id)
             .offset(offset)
             .limit(limit)
-        ).order_by(func.random())
+        )
 
-        return (await self.session.scalars(statement)).first()
+        return (await self.session.execute(statement.order_by(func.random()))).scalars().first()
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Get dream"""
