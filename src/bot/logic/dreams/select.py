@@ -261,4 +261,4 @@ async def process_dislike_command(message: types.Message, db):
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":ZZZ:"))
 async def process_sleep_command(message: types.Message):
-    await message.answer("Подождем пока кто то откликнется на ваши желания", reply_markup=SLEEP_BUTTONS_MARKUP)
+    await message.answer("Подождем пока кто то откликнется на ваши желания", reply_markup=MENU_KEYBOARD)
