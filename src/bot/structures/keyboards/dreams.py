@@ -22,7 +22,7 @@ DREAMS_NOT_FOUND_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text="Создать желание"),
          KeyboardButton(text=emoji.emojize(":ZZZ:"))],
-        [KeyboardButton(text="Мои желании")]
+        [KeyboardButton(text="Мои желания")]
     ],
     resize_keyboard=True
 )
@@ -58,7 +58,7 @@ LIKE_DISLIKE_BUTTONS_MARKUP = ReplyKeyboardMarkup(
 
 SLEEP_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text="Мои желании")]
+        [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text="Мои желания")]
     ],
     resize_keyboard=True
 )

@@ -6,13 +6,15 @@ import requests
 from aiogram import types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 
 from .router import myprofile_router
 from src.bot.structures.fsm.dream_edit import DreamEditGroup
 from src.bot.structures.keyboards.dreams import (DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP,
                                                  CANCEL_BUTTON, DREAMS_NOT_FOUND_BUTTONS_MARKUP,
                                                  CANCEL_WITHOUT_IMAGE_BUTTON)
+from src.bot.structures.fsm.register import ChangeProfileName
+from src.bot.structures.keyboards.menu import MENU_KEYBOARD
 
 
 @myprofile_router.message(F.text.lower() == "отмена")
@@ -30,19 +32,37 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@myprofile_router.message(F.text.lower() == 'мои желании')
+@myprofile_router.message(F.text.lower().startswith('изменить имя'))
+async def dream_change_name_handler(message: types.Message, state: FSMContext):
+    await state.set_state(ChangeProfileName.name)
+    await message.answer(text="Введите имя на которую хотите поменять", reply_markup=ReplyKeyboardRemove(),
+                         parse_mode='MARKDOWN')
+
+
+@myprofile_router.message(ChangeProfileName.name)
+async def edit_dream_name_handler(message: types.Message, state: FSMContext, db):
+    data = await state.update_data(name=message.text)
+    user = await db.user.get_user_by_id(message.from_user.id)
+    user.name = data.get('name', None)
+    await db.session.commit()
+    await state.clear()
+    return await message.answer(text=f"Вы успешно поменяли имя на *{message.text}*", reply_markup=MENU_KEYBOARD,
+                                parse_mode='MARKDOWN')
+
+
+@myprofile_router.message(F.text.lower() == 'мои желания')
 @myprofile_router.message(Command(commands='mydreams'))
 async def mydream_handler(message: types.Message, db):
     dreams_of_user = await db.dream.get_dreams_of_user(user_id=message.from_user.id)
     if dreams_of_user:
-        for dream in dreams_of_user:
+        for ind, dream in enumerate(dreams_of_user):
             reply_markup = InlineKeyboardMarkup(
                 inline_keyboard=[
                     [InlineKeyboardButton(text='Изменить', callback_data=f'edit_dream {dream.id}')],
                     [InlineKeyboardButton(text='Удалить', callback_data=f'delete_dream {dream.id}')]
                 ]
             )
-            text = (f"\n*Желание №{dream.id}*\n\n"
+            text = (f"\n*Желание №{ind + 1}*\n\n"
                     f"*Тема*: {dream.name}\n"
                     f"*Описание*: {dream.description}\n\n")
             if dream.image:
@@ -54,9 +74,14 @@ async def mydream_handler(message: types.Message, db):
                                              parse_mode='MARKDOWN')
             else:
                 await message.answer(text, reply_markup=reply_markup, parse_mode='MARKDOWN')
+
+            return await message.answer(f"Вы также можете выбрать одно из следующих действий: "
+                                        f"{emoji.emojize(':backhand_index_pointing_down:')}",
+                                        reply_markup=MENU_KEYBOARD,
+                                        parse_mode='MARKDOWN')
     else:
-        await message.answer("Упс, но у вас нет желании в Wanty :(\nВы сможете создать желание по кнопке ниже",
-                             reply_markup=DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP)
+        return await message.answer("Упс, но у вас нет желании в Wanty :(\nВы сможете создать желание по кнопке ниже",
+                                    reply_markup=DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP)
 
 
 @myprofile_router.callback_query(F.data.startswith("edit_dream"))

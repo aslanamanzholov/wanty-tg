@@ -28,7 +28,7 @@ REGISTER_USER_COUNTRY = ReplyKeyboardMarkup(
 
 REGISTER_SUCCESS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text="Мои желании")]
+        [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text="Мои желания")]
     ],
     resize_keyboard=True
 )

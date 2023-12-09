@@ -6,3 +6,7 @@ class RegisterGroup(StatesGroup):
     gender = State()
     country = State()
     name = State()
+
+
+class ChangeProfileName(StatesGroup):
+    name = State()

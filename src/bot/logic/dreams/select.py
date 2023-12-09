@@ -106,27 +106,29 @@ async def dreams_view_func(dream, message, db):
         dream_user = await db.user.get_user_by_id(user_id=dream_user_id)
         user_gender = emoji.emojize(':man:') if dream_user and dream_user.gender == 'Мужчина' \
             else emoji.emojize(':woman:')
-        current_time = datetime.utcnow().replace(tzinfo=timezone.utc)
-        time_difference = current_time - dream.created_at
-        days = time_difference.days
-        if days > 0:
-            days_word = "день" if days == 1 else "дня" if 1 < days < 5 else "дней"
-            time_difference_result = f"{time_difference.days} {days_word}"
-        else:
-            hours, remainder = divmod(time_difference.seconds, 3600)
-            minutes = remainder // 60
-            hours_word = "час" if hours == 1 else "часа" if 1 < hours < 5 else "часов"
-            minutes_word = "минута" if minutes == 1 else "минуты" if 1 < minutes < 5 else "минут"
-            if hours < 0:
-                time_difference_result = f"{hours} {hours_word}"
-            else:
-                time_difference_result = f"{minutes} {minutes_word}"
+        # current_time = datetime.utcnow().replace(tzinfo=timezone.utc)
+        # time_difference = current_time - dream.created_at
+        # days = time_difference.days
+        # if days > 0:
+        #     days_word = "день" if days == 1 else "дня" if 1 < days < 5 else "дней"
+        #     time_difference_result = f"{time_difference.days} {days_word}"
+        # else:
+        #     hours, remainder = divmod(time_difference.seconds, 3600)
+        #     minutes = remainder // 60
+        #     hours_word = "час" if hours == 1 else "часа" if 1 < hours < 5 else "часов"
+        #     minutes_word = "минута" if minutes == 1 else "минуты" if 1 < minutes < 5 else "минут"
+        #     if hours < 0:
+        #         time_difference_result = f"{hours} {hours_word}"
+        #     else:
+        #         time_difference_result = f"{minutes} {minutes_word}"
 
+        formatted_date = dream.created_at.strftime("%d.%m.%Y")
+        
         text = (f"\n*Тема*: {dream.name}\n"
                 f"*Описание*: {dream.description}\n"
                 f"*Город*: {dream_user.country if dream_user else 'Другой'}\n"
                 f"*Автор*: {dream_user.name if dream_user else 'Анонимный'} {user_gender}\n"
-                f"*в Wanty*: {time_difference_result}")
+                f"*Дата создания*: {formatted_date}")
         if dream.image:
             await message.bot.send_photo(message.chat.id,
                                          types.BufferedInputFile(dream.image,
