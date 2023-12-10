@@ -9,6 +9,7 @@ from src.bot.structures.fsm.register import RegisterGroup
 from src.bot.structures.keyboards.register import REGISTER_USER_COUNTRY, REGISTER_USER_GENDER, REGISTER_SUCCESS_MARKUP, \
     REGISTER_START_CONFIRM
 from src.bot.structures.keyboards.menu import MENU_KEYBOARD
+from src.bot.structures.keyboards.dreams import CANCEL_BUTTON
 
 
 @register_router.message(F.text.lower() == 'ok, давай начнем')
@@ -16,7 +17,7 @@ async def register_confirmation(message: Message, state: FSMContext, db):
     user = await db.user.user_register_check(active_user_id=message.from_user.id)
     if user is None:
         await state.set_state(RegisterGroup.age)
-        return await message.answer('Сколько тебе лет?', reply_markup=ReplyKeyboardRemove())
+        return await message.answer('Сколько тебе лет?', reply_markup=CANCEL_BUTTON)
     else:
         await message.answer(f"Привет, {user.name if user.name else message.from_user.first_name}!\n\n"
                              f"1. Просмотреть список желании\n2. Просмотреть мои желания\n3. Изменить имя",
@@ -61,7 +62,7 @@ async def register_name_handler(message: Message, state: FSMContext):
     await state.update_data(country=message.text)
     await state.set_state(RegisterGroup.name)
     return await message.answer(
-        'Как мне тебя называть?', reply_markup=ReplyKeyboardRemove()
+        'Как мне тебя называть?', reply_markup=CANCEL_BUTTON
     )
 
 

@@ -75,7 +75,7 @@ async def mydream_handler(message: types.Message, db):
             else:
                 await message.answer(text, reply_markup=reply_markup, parse_mode='MARKDOWN')
 
-            return await message.answer(f"Вы также можете выбрать одно из следующих действий: "
+            return await message.answer(f"*Вы также можете выбрать одно из следующих действий:* "
                                         f"{emoji.emojize(':backhand_index_pointing_down:')}",
                                         reply_markup=MENU_KEYBOARD,
                                         parse_mode='MARKDOWN')

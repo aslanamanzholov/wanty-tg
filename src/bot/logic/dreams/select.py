@@ -50,7 +50,7 @@ async def process_create_command(message: types.Message, state: FSMContext, db):
         await state.set_state(RegisterGroup.age)
         return await message.answer(f'Для того чтобы создать желание, необходимо зарегистрироваться '
                                     f'{emoji.emojize(":upside-down_face:")}\nСколько тебе лет?',
-                                    reply_markup=ReplyKeyboardRemove())
+                                    reply_markup=CANCEL_BUTTON)
 
 
 @dreams_router.message(DreamGroup.name)
@@ -156,7 +156,7 @@ async def process_dreams_handler(message: types.Message, state: FSMContext, db):
         await state.set_state(RegisterGroup.age)
         return await message.answer(f'Для того чтобы посмотреть желании, необходимо зарегистрироваться '
                                     f'{emoji.emojize(":upside-down_face:")}\nСколько тебе лет?',
-                                    reply_markup=ReplyKeyboardRemove())
+                                    reply_markup=CANCEL_BUTTON)
 
 
 async def send_notification_to_author(author_id, dream, message):
