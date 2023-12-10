@@ -39,6 +39,6 @@ async def start_handler(message: types.Message, state: FSMContext, db):
             '*Для начала, нажмите на кнопку ниже:*',
             reply_markup=REGISTER_START_CONFIRM, parse_mode="MARKDOWN")
     else:
-        return await message.answer(f"Привет, *{user.name if user.name else message.from_user.first_name}*!\n\n"
+        return await message.answer(f"Привет, *{user.name if user.name else message.from_user.first_name}!*\n\n"
                                     f"1. Просмотреть список желаний\n2. Просмотреть мои желания\n3. Изменить имя",
                                     reply_markup=MENU_KEYBOARD, parse_mode="MARKDOWN")

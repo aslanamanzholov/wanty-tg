@@ -123,7 +123,7 @@ async def dreams_view_func(dream, message, db):
         #         time_difference_result = f"{minutes} {minutes_word}"
 
         formatted_date = dream.created_at.strftime("%d.%m.%Y")
-        
+
         text = (f"\n*Тема*: {dream.name}\n"
                 f"*Описание*: {dream.description}\n"
                 f"*Город*: {dream_user.country if dream_user else 'Другой'}\n"
@@ -175,7 +175,8 @@ async def send_notification_to_author(author_id, dream, message):
                 ]
             ]
         )
-        await message.bot.send_message(author_id, notification_message, reply_markup=reply_markup, parse_mode='MARKDOWN')
+        await message.bot.send_message(author_id, notification_message, reply_markup=reply_markup,
+                                       parse_mode='MARKDOWN')
     except TelegramForbiddenError as e:
         logging.error(e)
 
@@ -260,5 +261,8 @@ async def process_dislike_command(message: types.Message, db):
 
 
 @dreams_router.message(F.text.lower() == emoji.emojize(":ZZZ:"))
-async def process_sleep_command(message: types.Message):
-    await message.answer("Подождем пока кто то откликнется на ваши желания", reply_markup=MENU_KEYBOARD)
+async def process_sleep_command(message: types.Message, db):
+    user = await db.user.user_register_check(active_user_id=message.from_user.id)
+    await message.answer(f"Привет, *{user.name if user.name else message.from_user.first_name}!*\n\n"
+                         f"1. Просмотреть список желаний\n2. Просмотреть мои желания\n3. Изменить имя",
+                         reply_markup=MENU_KEYBOARD, parse_mode="MARKDOWN")
