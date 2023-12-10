@@ -4,7 +4,7 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 
-from bot.structures.keyboards.profile import INLINE_BUTTON_TG_CHANNEL_URL_MARKUP
+from src.bot.structures.keyboards.profile import INLINE_BUTTON_TG_CHANNEL_URL_MARKUP
 from src.bot.structures.keyboards.menu import MENU_KEYBOARD
 from src.bot.filters.register_filter import RegisterFilter
 from src.bot.structures.fsm.register import RegisterGroup
