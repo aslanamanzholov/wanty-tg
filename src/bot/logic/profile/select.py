@@ -132,7 +132,7 @@ async def edit_user_dream_handler(message: types.Message, state: FSMContext, db)
     await db.session.commit()
     await state.clear()
     return await message.answer(
-        '*Ты успешно обновил содержимое желании..\n\nОжидайте взаимных откликов*',
+        '*Ты успешно обновил содержимое желания..\n\nОжидайте взаимных откликов*',
         reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP, parse_mode="MARKDOWN"
     )
 

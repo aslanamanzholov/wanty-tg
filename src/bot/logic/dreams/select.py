@@ -143,7 +143,7 @@ async def dreams_view_func(dream, message, db):
         await message.answer(text, reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
 
 
-@dreams_router.message(F.text.lower().startswith('желании'))
+@dreams_router.message(F.text.lower().startswith('желания'))
 @dreams_router.message(Command(commands='dreams'))
 async def process_dreams_handler(message: types.Message, state: FSMContext, db):
     user_id = message.from_user.id
@@ -193,7 +193,7 @@ async def share_contact_callback_handler(callback_query: types.CallbackQuery, db
         notification_message = (f"Вот его профиль в Telegram, выполняйте "
                                 f"ваши совместные желания: {emoji.emojize(':smiling_face_with_hearts:')}\n"
                                 f"*https://t.me/{liker_username_id}*")
-        notification_for_sender_message = (f"Это автор желании *{dream.name}*, выполняйте совместные желания: "
+        notification_for_sender_message = (f"Это автор желания *{dream.name}*, выполняйте совместные желания: "
                                            f"{emoji.emojize(':smiling_face_with_hearts:')}\n"
                                            f"*https://t.me/{dream_username_id}*")
         await callback_query.bot.send_message(chat_id, notification_for_sender_message,

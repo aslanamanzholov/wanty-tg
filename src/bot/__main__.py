@@ -9,7 +9,7 @@ from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redis.asyncio.client import Redis
 
-from src.bot.logic.dreams import periodic_dream_notification, clear_current_records
+from src.bot.logic.dreams import clear_current_records
 from src.bot.dispatcher import get_dispatcher, get_redis_storage
 from src.bot.structures.data_structure import TransferData
 from src.bot.logic.bot_commands import bot_commands

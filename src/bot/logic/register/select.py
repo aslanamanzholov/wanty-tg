@@ -20,7 +20,7 @@ async def register_confirmation(message: Message, state: FSMContext, db):
         return await message.answer('Сколько тебе лет?', reply_markup=CANCEL_BUTTON)
     else:
         await message.answer(f"Привет, {user.name if user.name else message.from_user.first_name}!\n\n"
-                             f"1. Просмотреть список желании\n2. Просмотреть мои желания\n3. Изменить имя",
+                             f"1. Просмотреть список желаний\n2. Просмотреть мои желания\n3. Изменить имя",
                              reply_markup=MENU_KEYBOARD)
 
 

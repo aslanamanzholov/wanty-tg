@@ -4,7 +4,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 
 PROFILE_MAIN_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text=f"Желании {emoji.emojize(':thought_balloon:')}")],
+        [KeyboardButton(text=f"Желания {emoji.emojize(':thought_balloon:')}")],
         [KeyboardButton(text=f"Создать желание {emoji.emojize(':thought_balloon:')}")]
     ],
     resize_keyboard=True
