@@ -18,7 +18,7 @@ async def periodic_dream_notification():
             db = Database(session)
         users = await db.user.get_all_user_id()
         for user in users:
-            await bot.send_message(user.user_id, f"Привет *{user.name if user else 'пользователь'}!*\n"
+            await bot.send_message(user.user_id, f"Привет *{user.name if user else 'пользователь'}*\n"
                                                  f"Только активные пользователи узнают все тайны Wanty. Будь среди первых! "
                                                  f"{emoji.emojize(':thought_balloon:')}",
                                    reply_markup=MENU_KEYBOARD, parse_mode="MARKDOWN")
