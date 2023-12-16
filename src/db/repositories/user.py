@@ -18,14 +18,14 @@ class UserRepo(Repository[User]):
         super().__init__(type_model=User, session=session)
 
     async def new(
-            self,
-            user_id: int,
-            user_name: str | None = None,
-            name: str | None = None,
-            age: int | None = None,
-            gender: str | None = None,
-            country: str | None = None,
-            role: Optional[Role] = Role.USER,
+        self,
+        user_id: int,
+        user_name: str | None = None,
+        name: str | None = None,
+        age: int | None = None,
+        gender: str | None = None,
+        country: str | None = None,
+        role: Optional[Role] = Role.USER,
     ) -> None:
         """Insert a new user into the database.
 
@@ -53,13 +53,13 @@ class UserRepo(Repository[User]):
     async def get_role(self, user_id: int) -> Role:
         """Get user role by id."""
         return await self.session.scalar(
-            select(User.role).where(User.user_id == user_id).limit(1)
+            select(User.role).where(User.user_id == int(user_id)).limit(1)
         )
 
     async def user_register_check(self, active_user_id: int):
         """Get user register check by id."""
         return (await self.session.scalars(
-            select(self.type_model).where(User.user_id == active_user_id).limit(1)
+            select(self.type_model).where(User.user_id == int(active_user_id)).limit(1)
         )).one_or_none()
 
     async def get_user_by_id(self, user_id: int):
@@ -69,7 +69,7 @@ class UserRepo(Repository[User]):
         return (await self.session.scalars(statement)).first()
 
     async def get_all_user_id(self):
-        """Get user by id."""
+        """Get all user IDs."""
         statement = select(self.type_model)
 
         return (await self.session.scalars(statement)).all()

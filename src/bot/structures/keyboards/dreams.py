@@ -49,6 +49,13 @@ CANCEL_WITHOUT_IMAGE_BUTTON = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+CANCEL_WITHOUT_DETAILS_BUTTON = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Без подробностей"), KeyboardButton(text="Отмена")]
+    ],
+    resize_keyboard=True
+)
+
 LIKE_DISLIKE_BUTTONS_MARKUP = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=f"Желания {emoji.emojize(':thought_balloon:')}"), KeyboardButton(text=emoji.emojize(":ZZZ:"))]

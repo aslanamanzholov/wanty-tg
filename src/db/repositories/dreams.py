@@ -17,34 +17,26 @@ class DreamRepo(Repository[Dream]):
         super().__init__(type_model=Dream, session=session)
 
     async def new(
-            self,
-            user_id: int,
-            username: str | None = None,
-            image: bytes | None = None,
-            name: str | None = None,
-            description: str | None = None,
+        self,
+        user_id: int,
+        username: str | None = None,
+        image: bytes | None = None,
+        name: str | None = None,
+        description: str | None = None,
     ) -> None:
-        """Insert a new user into the database.
-
-        :param user_id: Telegram user id
-        :param username: Telegram username
-        :param image: Image of Dream
-        :param name: Name of Dream
-        :param description: Description of Dream
-        """
-        await self.session.merge(
-            Dream(
-                user_id=user_id,
-                username=username,
-                image=image,
-                name=name,
-                description=description
-            )
+        """Insert a new dream into the database."""
+        new_dream = Dream(
+            user_id=user_id,
+            username=username,
+            image=image,
+            name=name,
+            description=description,
         )
+        self.session.add(new_dream)
         await self.session.commit()
 
     async def get_dream(self, user_id, offset, limit: int = 1):
-        """Get dream"""
+        """Get a dream."""
         statement = (
             select(self.type_model)
             .where(Dream.user_id != user_id)
@@ -52,25 +44,23 @@ class DreamRepo(Repository[Dream]):
             .limit(limit)
         )
 
-        return (await self.session.scalars(statement)).first()
+        return await self.session.scalar(statement)
 
     async def get_elements_count_of_dream(self, user_id) -> int:
-        """Get dream"""
-        statement = select(self.type_model).where(Dream.user_id != user_id)
-
-        return (await self.session.scalars(statement)).all().count(0)
+        """Получение количества желаний."""
+        statement = select(func.count()).where(Dream.user_id != user_id)
+        return await self.session.scalar(statement)
 
     async def get_dreams_of_user(self, user_id: int, limit: int = 100) -> Sequence[Base]:
-        """Get user dreams by id."""
+        """Получение желаний пользователя по его ID."""
         statement = select(self.type_model).where(Dream.user_id == user_id).limit(limit)
-
-        return (await self.session.scalars(statement)).all()
+        result = await self.session.execute(statement)
+        return result.scalars().all()
 
     async def get_dream_by_id(self, dream_id: int):
         """Get user dream by id."""
         statement = select(self.type_model).where(Dream.id == int(dream_id))
-
-        return (await self.session.scalars(statement)).first()
+        return await self.session.scalar(statement)
 
 
 class DreamLikedRecordRepo(Repository[DreamLikedRecord]):
@@ -89,15 +79,7 @@ class DreamLikedRecordRepo(Repository[DreamLikedRecord]):
             dream_name: str | None = None,
             type_feedback: str | None = None,
     ) -> None:
-        """Insert a new user into the database.
-
-        :param author_user_id: Author user id
-        :param author_username: Author username
-        :param liked_user_id: Liked User id of Dream
-        :param liked_username: Liked Username of Dream
-        :param dream_name: Name of Dream
-        :param type_feedback: Type Feedback of Dream
-        """
+        """Insert a new record into the database."""
         await self.session.merge(
             DreamLikedRecord(
                 author_username_id=author_username,
