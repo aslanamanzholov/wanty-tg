@@ -32,7 +32,7 @@ async def dream_change_name_handler(message: types.Message, state: FSMContext):
     await state.set_state(ChangeProfileName.name)
     await message.answer(
         text="Введите новое имя, на которое хотите изменить",
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=CANCEL_BUTTON,
         parse_mode='MARKDOWN'
     )
 
@@ -41,15 +41,12 @@ async def dream_change_name_handler(message: types.Message, state: FSMContext):
 async def edit_dream_name_handler(message: types.Message, state: FSMContext, db):
     new_name = message.text
 
-    # Обновление данных в базе данных
     user = await db.user.get_user_by_id(message.from_user.id)
     user.name = new_name
     await db.session.commit()
 
-    # Очистка состояния
     await state.clear()
 
-    # Отправка сообщения об успешном изменении имени
     await message.answer(
         text=f"Вы успешно поменяли имя на *{new_name}*",
         reply_markup=MENU_KEYBOARD,
