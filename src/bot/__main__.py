@@ -9,6 +9,7 @@ from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redis.asyncio.client import Redis
 
+from src.bot.logic.dreams import periodic_dream_notification
 from src.bot.logic.dreams import clear_current_records
 from src.bot.dispatcher import get_dispatcher, get_redis_storage
 from src.bot.structures.data_structure import TransferData
@@ -45,7 +46,7 @@ async def start_bot():
     scheduler = AsyncIOScheduler(jobstores=job_stores)
 
     scheduler.start()
-    # scheduler.add_job(periodic_dream_notification, "interval", days=5, next_run_time=datetime.now())
+    scheduler.add_job(periodic_dream_notification, "interval", days=5, next_run_time=datetime.now())
     scheduler.add_job(clear_current_records, "interval", days=5, next_run_time=datetime.now())
 
     await bot.set_my_commands(commands=commands_for_bot)

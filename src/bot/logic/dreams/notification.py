@@ -11,19 +11,39 @@ from src.configuration import conf
 from src.db.database import create_async_engine, Database
 
 
+async def get_bot():
+    return Bot(token=conf.bot.token)
+
+
+async def get_database():
+    async with AsyncSession(bind=create_async_engine(url=conf.db.build_connection_str())) as session:
+        return Database(session)
+
+
+async def send_periodic_notification(user):
+    bot = await get_bot()
+    try:
+        await bot.send_message(
+            user.user_id,
+            f"🌟 *Wanty приглашает вас посмотреть желания!* 🌟\n\n"
+            f"👀 Посмотрите, что другие пользователи хотят, и найдите единомышленников.\n ",
+            reply_markup=MENU_KEYBOARD,
+            parse_mode="MARKDOWN"
+        )
+    except TelegramForbiddenError as e:
+        logging.info(e, exc_info=False)
+    except Exception as e:
+        logging.error(f"Произошла ошибка при отправке общего уведомления: {e}", exc_info=True)
+
+
 async def periodic_dream_notification():
     try:
-        bot = Bot(token=conf.bot.token)
-        async with AsyncSession(bind=create_async_engine(url=conf.db.build_connection_str())) as session:
-            db = Database(session)
+        db = await get_database()
         users = await db.user.get_all_user_id()
         for user in users:
-            await bot.send_message(user.user_id, f"Привет *{user.name if user else 'пользователь'}*\n"
-                                                 f"Только активные пользователи узнают все тайны Wanty. Будь среди первых! "
-                                                 f"{emoji.emojize(':thought_balloon:')}",
-                                   reply_markup=MENU_KEYBOARD, parse_mode="MARKDOWN")
-    except TelegramForbiddenError as e:
-        logging.info(e, exc_info=True)
+            await send_periodic_notification(user)
+    except Exception as e:
+        logging.error(e, exc_info=True)
 
 
 async def clear_current_records():
