@@ -1,9 +1,10 @@
 """This file represents a Dreams logic."""
 import logging
 from os import getenv
+import hashlib
 
 import emoji
-import requests
+import aiohttp
 
 from aiogram import types
 from aiogram.exceptions import TelegramForbiddenError
@@ -20,6 +21,47 @@ from .router import dreams_router
 from src.bot.structures.fsm.dream_create import DreamGroup
 from src.bot.structures.fsm.register import RegisterGroup
 from src.bot.structures.keyboards.menu import MENU_KEYBOARD
+
+# Импорт Redis кэша
+from src.bot.structures.redis_cache import RedisCache
+from typing import Optional
+
+# Глобальный объект Redis кэша (будет инициализирован в middleware)
+redis_cache: Optional[RedisCache] = None
+
+async def get_image_content(photo, bot):
+    """Асинхронно загружает изображение с кэшированием."""
+    try:
+        photo_file = await bot.get_file(photo.file_id)
+        photo_url = photo_file.file_path
+        
+        # Создаем хеш для кэширования
+        cache_key = hashlib.md5(photo_url.encode()).hexdigest()
+        
+        # Проверяем Redis кэш
+        if redis_cache:
+            cached_image = await redis_cache.get_image_cache(cache_key)
+            if cached_image:
+                return cached_image
+        
+        # Асинхронная загрузка изображения
+        bot_token = bot.token
+        request_url = f"https://api.telegram.org/file/bot{bot_token}/{photo_url}"
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as response:
+                if response.status == 200:
+                    image_content = await response.read()
+                    # Кэшируем в Redis
+                    if redis_cache:
+                        await redis_cache.set_image_cache(cache_key, image_content)
+                    return image_content
+                    
+    except Exception as e:
+        logging.error(f"Ошибка при загрузке изображения: {e}")
+        return None
+    
+    return None
 
 
 @dreams_router.message(F.text.lower() == "отмена")
@@ -82,13 +124,8 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
     dream_image = None
     if message.photo:
         photo = message.photo[-1]
-        photo_file = await message.bot.get_file(photo.file_id)
-        photo_url = photo_file.file_path
-        request_url = f"https://api.telegram.org/file/bot{getenv('BOT_TOKEN')}/{photo_url}"
-
-        response = requests.get(request_url)
-        if response.status_code == 200:
-            dream_image = response.content
+        # Передаем bot объект для работы с файлами
+        dream_image = await get_image_content(photo, message.bot)
 
     await db.dream.new(
         user_id=message.from_user.id,
@@ -105,7 +142,7 @@ async def register_gender_handler(message: Message, state: FSMContext, db):
     )
 
 
-current_record = {}
+# Убираем глобальную переменную - теперь используем Redis кэш
 
 
 async def dreams_view_func(dream, message, db):
@@ -145,7 +182,8 @@ async def process_dreams_handler(message: types.Message, state: FSMContext, db):
     user = await db.user.user_register_check(active_user_id=user_id)
 
     if user:
-        offset = current_record.get(user_id, 0)
+        # Используем Redis кэш для offset
+        offset = await redis_cache.get_user_offset(user_id) if redis_cache else 0
         dream = await db.dream.get_dream(user_id=user_id, offset=offset)
         await dreams_view_func(dream=dream, message=message, db=db)
     else:
@@ -225,7 +263,8 @@ async def share_contact_callback_handler(callback_query: CallbackQuery, db):
                                                 parse_mode='MARKDOWN')
         else:
             user_id = callback_query.from_user.id
-            offset = current_record.get(user_id, 0)
+            # Используем Redis кэш для offset
+            offset = await redis_cache.get_user_offset(user_id) if redis_cache else 0
             dream = await db.dream.get_dream(user_id=user_id, offset=offset)
             await dreams_view_func(dream=dream, message=callback_query.message, db=db)
     except TelegramForbiddenError as e:
@@ -236,8 +275,10 @@ async def share_contact_callback_handler(callback_query: CallbackQuery, db):
 async def process_like_command(message: types.Message, db):
     user_id = message.from_user.id
 
-    offset = current_record.get(user_id, 0)
-    current_record[user_id] = offset + 1
+    # Используем Redis кэш для offset
+    offset = await redis_cache.get_user_offset(user_id) if redis_cache else 0
+    if redis_cache:
+        await redis_cache.increment_user_offset(user_id)
 
     dream = await db.dream.get_dream(user_id=user_id, offset=offset)
     author_id = dream.user_id if dream else None
@@ -261,8 +302,11 @@ async def process_like_command(message: types.Message, db):
 @dreams_router.message(F.text.lower() == emoji.emojize(":thumbs_down:"))
 async def process_dislike_command(message: types.Message, db):
     user_id = message.from_user.id
-    offset = current_record.get(user_id, 0)
-    current_record[user_id] = offset + 1
+    
+    # Используем Redis кэш для offset
+    offset = await redis_cache.get_user_offset(user_id) if redis_cache else 0
+    if redis_cache:
+        await redis_cache.increment_user_offset(user_id)
 
     next_dream = await db.dream.get_dream(user_id=user_id, offset=offset + 1)
     await dreams_view_func(dream=next_dream, message=message, db=db)

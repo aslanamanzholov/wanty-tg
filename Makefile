@@ -9,6 +9,7 @@ help:
 	@echo "  project-stop  Stop docker-compose"
 	@echo "  lint		Reformat code"
 	@echo "  requirements  Export poetry.lock to requirements.txt"
+	@echo "  test-performance Test performance optimizations"
 
 .PHONY:	blue
 blue:
@@ -42,6 +43,10 @@ requirements:
 	# Export poetry.lock to requirements.txt if needed
 	poetry check
 	poetry export -o ${REQUIREMENTS_FILE} --without-hashes
+
+.PHONY: test-performance
+test-performance:
+	poetry run python test_performance_upgrade.py
 
 
 # Alembic utils

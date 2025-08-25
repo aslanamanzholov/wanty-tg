@@ -6,11 +6,13 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from redis.asyncio.client import Redis
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine
 
 from src.configuration import conf
 
 from .logic import routers
 from .middlewares.database_md import DatabaseMiddleware
+from .middlewares.redis_md import RedisMiddleware
 
 
 def get_redis_storage(
@@ -29,6 +31,8 @@ def get_redis_storage(
 
 
 def get_dispatcher(
+    engine: AsyncEngine,
+    redis_client: Redis,
     storage: BaseStorage = MemoryStorage(),
     fsm_strategy: FSMStrategy | None = FSMStrategy.CHAT,
     event_isolation: BaseEventIsolation | None = None,
@@ -42,8 +46,17 @@ def get_dispatcher(
     for router in routers:
         dp.include_router(router)
 
-    # Register middlewares
+    # Create session maker with connection pooling
+    sessionmaker = async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autoflush=False,
+        autocommit=False
+    )
 
-    dp.update.middleware.register(DatabaseMiddleware())
+    # Register middlewares
+    dp.update.middleware.register(DatabaseMiddleware(sessionmaker))
+    dp.update.middleware.register(RedisMiddleware(redis_client))
 
     return dp

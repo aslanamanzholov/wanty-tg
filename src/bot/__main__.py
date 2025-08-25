@@ -29,15 +29,16 @@ async def start_bot():
             password=conf.redis.passwd
         )
     }
-    storage = get_redis_storage(
-        redis=Redis(
-            db=conf.redis.db,
-            host=conf.redis.host,
-            password=conf.redis.passwd,
-            username=conf.redis.username,
-            port=conf.redis.port,
-        )
+    # Create Redis client for storage
+    redis_client = Redis(
+        db=conf.redis.db,
+        host=conf.redis.host,
+        password=conf.redis.passwd,
+        username=conf.redis.username,
+        port=conf.redis.port,
     )
+    
+    storage = get_redis_storage(redis=redis_client)
 
     commands_for_bot = []
     for cmd in bot_commands:
@@ -51,13 +52,25 @@ async def start_bot():
 
     await bot.set_my_commands(commands=commands_for_bot)
 
-    dp = get_dispatcher(storage=storage)
+    # Create engine with connection pooling
+    engine = create_async_engine(url=conf.db.build_connection_str())
+    
+    # Create Redis client
+    redis_client = Redis(
+        db=conf.redis.db,
+        host=conf.redis.host,
+        password=conf.redis.passwd,
+        username=conf.redis.username,
+        port=conf.redis.port,
+    )
+    
+    dp = get_dispatcher(engine=engine, redis_client=redis_client, storage=storage)
 
     await dp.start_polling(
         bot,
         allowed_updates=dp.resolve_used_update_types(),
         **TransferData(
-            engine=create_async_engine(url=conf.db.build_connection_str()),
+            engine=engine,
         )
     )
 
