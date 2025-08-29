@@ -28,6 +28,9 @@ class Dream(Base):
     description: Mapped[str] = mapped_column(
         sa.Text, unique=False, nullable=True
     )
+    category: Mapped[str] = mapped_column(
+        sa.Text, unique=False, nullable=True
+    )
     created_at = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

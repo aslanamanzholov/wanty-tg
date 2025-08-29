@@ -29,8 +29,6 @@ class RedisMiddleware(BaseMiddleware):
         redis_cache = RedisCache(self.redis_client)
         data['redis_cache'] = redis_cache
         
-        # Инициализируем глобальную переменную для dreams/select.py
-        from src.bot.logic.dreams.select import redis_cache as global_redis_cache
-        global_redis_cache = redis_cache
+
         
         return await handler(event, data)

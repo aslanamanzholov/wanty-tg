@@ -6,13 +6,14 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from redis.asyncio.client import Redis
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine, AsyncSession
 
 from src.configuration import conf
 
 from .logic import routers
 from .middlewares.database_md import DatabaseMiddleware
 from .middlewares.redis_md import RedisMiddleware
+
 
 
 def get_redis_storage(

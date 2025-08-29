@@ -23,6 +23,7 @@ class DreamRepo(Repository[Dream]):
         image: bytes | None = None,
         name: str | None = None,
         description: str | None = None,
+        category: str | None = None,
     ) -> None:
         """Insert a new dream into the database."""
         new_dream = Dream(
@@ -31,6 +32,7 @@ class DreamRepo(Repository[Dream]):
             image=image,
             name=name,
             description=description,
+            category=category,
         )
         self.session.add(new_dream)
         await self.session.commit()
@@ -40,11 +42,16 @@ class DreamRepo(Repository[Dream]):
         statement = (
             select(self.type_model)
             .where(Dream.user_id != user_id)
+            .order_by(Dream.id)  # Добавляем сортировку для стабильного порядка
             .offset(offset)
             .limit(limit)
         )
 
         return await self.session.scalar(statement)
+
+    async def get_dream_excluding_user(self, user_id, offset, limit: int = 1):
+        """Get a dream excluding the current user's dreams."""
+        return await self.get_dream(user_id, offset, limit)
 
     async def get_elements_count_of_dream(self, user_id) -> int:
         """Получение количества желаний."""

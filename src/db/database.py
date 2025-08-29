@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import create_async_engine as _create_async_engine
 from src.configuration import conf
 
 from .repositories import UserRepo, DreamRepo, DreamLikedRecordRepo
+from .repositories.achievements import AchievementsRepository, ProgressRepository
 
 
 def create_async_engine(url: URL | str) -> AsyncEngine:
@@ -31,6 +32,10 @@ class Database:
     """ Dream repository """
     dream_liked_record: DreamLikedRecordRepo
     """ Dream repository """
+    achievements: AchievementsRepository
+    """ Achievements repository """
+    progress: ProgressRepository
+    """ Progress repository """
 
     session: AsyncSession
 
@@ -40,6 +45,8 @@ class Database:
         user: UserRepo = None,
         dream: DreamRepo = None,
         dream_liked_record: DreamLikedRecordRepo = None,
+        achievements: AchievementsRepository = None,
+        progress: ProgressRepository = None,
     ):
         """Initialize Database class.
 
@@ -50,3 +57,5 @@ class Database:
         self.user = user or UserRepo(session=session)
         self.dream = dream or DreamRepo(session=session)
         self.dream_liked_record = dream_liked_record or DreamLikedRecordRepo(session=session)
+        self.achievements = achievements or AchievementsRepository(session=session)
+        self.progress = progress or ProgressRepository(session=session)

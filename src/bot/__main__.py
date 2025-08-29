@@ -55,15 +55,6 @@ async def start_bot():
     # Create engine with connection pooling
     engine = create_async_engine(url=conf.db.build_connection_str())
     
-    # Create Redis client
-    redis_client = Redis(
-        db=conf.redis.db,
-        host=conf.redis.host,
-        password=conf.redis.passwd,
-        username=conf.redis.username,
-        port=conf.redis.port,
-    )
-    
     dp = get_dispatcher(engine=engine, redis_client=redis_client, storage=storage)
 
     await dp.start_polling(

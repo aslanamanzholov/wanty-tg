@@ -1,20 +1,19 @@
 """This file represents a My Profile logic."""
-from os import getenv
-
 import emoji
-import requests
+
 from aiogram import types, F
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove, Message
+from aiogram.types import Message
 
 from .router import myprofile_router
 from src.bot.structures.fsm.dream_edit import DreamEditGroup
-from src.bot.structures.keyboards.dreams import (DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP,
-                                                 CANCEL_BUTTON, DREAMS_NOT_FOUND_BUTTONS_MARKUP,
-                                                 CANCEL_WITHOUT_IMAGE_BUTTON)
+from src.bot.structures.keyboards.dreams import (
+    DREAMS_MAIN_INLINE_MARKUP,
+    DREAMS_NOT_FOUND_INLINE_MARKUP,
+    CANCEL_BUTTON
+)
 from src.bot.structures.fsm.register import ChangeProfileName
-from src.bot.structures.keyboards.menu import MENU_KEYBOARD
+from src.bot.structures.keyboards.menu import MENU_KEYBOARD, ADDITIONAL_FEATURES_MARKUP
 
 
 @myprofile_router.message(F.text.lower() == "отмена")
@@ -24,10 +23,11 @@ async def cancel_handler(message: Message, state: FSMContext) -> None:
     if current_state is not None:
         await state.clear()
         await message.answer(f"Вы отменили {emoji.emojize(':smiling_face_with_tear:')}",
-                             reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP)
+                             reply_markup=DREAMS_NOT_FOUND_INLINE_MARKUP)
 
 
 @myprofile_router.message(F.text.lower().startswith('изменить имя'))
+@myprofile_router.message(F.text == f'Изменить имя {emoji.emojize(":writing_hand:")}')
 async def dream_change_name_handler(message: types.Message, state: FSMContext):
     await state.set_state(ChangeProfileName.name)
     await message.answer(
@@ -48,22 +48,23 @@ async def edit_dream_name_handler(message: types.Message, state: FSMContext, db)
     await state.clear()
 
     await message.answer(
-        text=f"Вы успешно поменяли имя на *{new_name}*",
-        reply_markup=MENU_KEYBOARD,
-        parse_mode='MARKDOWN'
-    )
+            text=f"Вы успешно поменяли имя на *{new_name}*",
+            reply_markup=MENU_KEYBOARD,
+            parse_mode='MARKDOWN'
+        )
 
 
 @myprofile_router.message(F.text.lower() == 'мои желания')
-@myprofile_router.message(Command(commands='mydreams'))
+@myprofile_router.message(F.text == 'Мои желания')
+@myprofile_router.message(F.text == 'Мои желания')
 async def mydream_handler(message: types.Message, db):
     dreams_of_user = await db.dream.get_dreams_of_user(user_id=message.from_user.id)
     if dreams_of_user:
         for ind, dream in enumerate(dreams_of_user):
-            reply_markup = InlineKeyboardMarkup(
+            reply_markup = types.InlineKeyboardMarkup(
                 inline_keyboard=[
-                    [InlineKeyboardButton(text='Изменить', callback_data=f'edit_dream {dream.id}')],
-                    [InlineKeyboardButton(text='Удалить', callback_data=f'delete_dream {dream.id}')]
+                    [types.InlineKeyboardButton(text='Изменить', callback_data=f'edit_dream {dream.id}')],
+                    [types.InlineKeyboardButton(text='Удалить', callback_data=f'delete_dream {dream.id}')]
                 ]
             )
             text = (f"\n*Желание №{ind + 1}*\n\n"
@@ -86,9 +87,25 @@ async def mydream_handler(message: types.Message, db):
             parse_mode='MARKDOWN'
         )
     else:
+        no_dreams_text = (
+            "🌟 **У тебя пока нет желаний** 🌟\n\n"
+            "Не переживай! Это отличная возможность создать свое первое желание.\n\n"
+            "**🏆 Достижения:**\n"
+            "• Создай первое желание и получи достижение 'Первый шаг' (+10 очков)\n"
+            "• Начни свой путь к званию 'Мастер желаний'\n\n"
+            "**💭 Что можно пожелать?**\n"
+            "• Встречу с единомышленниками\n"
+            "• Совместное путешествие\n"
+            "• Новое хобби или увлечение\n"
+            "• Помощь в достижении цели\n\n"
+            "**🚀 Создай свое первое желание прямо сейчас!**\n"
+            "Нажми кнопку 'Создать желание' ниже и начни зарабатывать очки!"
+        )
+        
         await message.answer(
-            "Упс, но у вас нет желаний в Wanty :(\nВы можете создать желание по кнопке ниже",
-            reply_markup=DREAMS_NOT_FOUND_BUTTONS_PROFILE_MARKUP
+            no_dreams_text,
+            reply_markup=DREAMS_NOT_FOUND_INLINE_MARKUP,
+            parse_mode="MARKDOWN"
         )
 
 
@@ -115,7 +132,7 @@ async def edit_dream_name_handler(message: types.Message, state: FSMContext):
         f"{emoji.emojize(':thumbs_up:')} (не обязательное поле)"
     )
 
-    await message.answer(text, reply_markup=CANCEL_WITHOUT_IMAGE_BUTTON)
+    await message.answer(text, reply_markup=CANCEL_BUTTON)
 
 
 @myprofile_router.message(DreamEditGroup.image)
@@ -159,7 +176,7 @@ async def edit_user_dream_handler(message: types.Message, state: FSMContext, db)
 
         await message.answer(
             '*Ты успешно обновил содержимое желания..\n\nОжидайте взаимных откликов*',
-            reply_markup=DREAMS_NOT_FOUND_BUTTONS_MARKUP,
+            reply_markup=DREAMS_NOT_FOUND_INLINE_MARKUP,
             parse_mode="MARKDOWN"
         )
     except Exception as e:
@@ -183,3 +200,71 @@ async def myprofile_delete_dream_callback_handler(callback_query: types.Callback
         print(f"Error in myprofile_delete_dream_callback_handler: {e}")
         await callback_query.message.answer("*Произошла ошибка при удалении желания. Пожалуйста, "
                                             "попробуйте еще раз.*", parse_mode='MARKDOWN')
+
+
+@myprofile_router.message(F.text.lower() == 'профиль')
+@myprofile_router.message(F.text == '👤 Профиль')
+@myprofile_router.message(F.text == '👤 Профиль')
+async def profile_handler(message: types.Message, db):
+    user = await db.user.get_user_by_id(message.from_user.id)
+    user_dreams = await db.dream.get_dreams_of_user(user_id=message.from_user.id)
+    
+    # Получаем статистику из прогресса
+    user_progress = await db.progress.get_user_progress(message.from_user.id)
+    if not user_progress:
+        user_progress = await db.progress.create_user_progress(message.from_user.id)
+    
+    total_dreams = user_progress.total_dreams
+    total_likes = user_progress.total_likes_received
+    
+    # Определяем уровень активности
+    if total_dreams == 0:
+        activity_level = "🆕 Новичок"
+        activity_emoji = "🌟"
+    elif total_dreams <= 3:
+        activity_level = "🚀 Активный"
+        activity_emoji = "🔥"
+    elif total_dreams <= 7:
+        activity_level = "⭐ Продвинутый"
+        activity_emoji = "💫"
+    else:
+        activity_level = "🏆 Эксперт"
+        activity_emoji = "👑"
+    
+    profile_text = (
+            f"👤 **Твой профиль в Wanty** 👤\n\n"
+            f"**{activity_emoji} {activity_level}**\n\n"
+            f"**📊 Статистика:**\n"
+            f"• Создано желаний: **{total_dreams}**\n"
+            f"• Получено лайков: **{total_likes}**\n"
+            f"• Просмотрено желаний: **{user_progress.total_dreams_viewed}**\n"
+            f"• Поставлено лайков: **{user_progress.total_likes_given}**\n"
+            f"• Дней активности: **{user_progress.consecutive_days}**\n"
+            f"• Дата регистрации: **{user.created_at.strftime('%d.%m.%Y') if user.created_at else 'Не указано'}**\n\n"
+            
+            f"**👤 Личная информация:**\n"
+            f"• Имя: **{user.name if user.name else 'Не указано'}**\n"
+            f"• ID: `{user.user_id}`\n\n"
+            
+            f"**🏆 Достижения:**\n"
+            f"• Общие очки: **{user_progress.total_points}**\n\n"
+            
+            "**💡 Дополнительные функции:**\n"
+            "Используй кнопки ниже для доступа к достижениям, категориям и статистике!"
+        )
+    
+    # Создаем комбинированную клавиатуру: основные кнопки + inline кнопки
+    from src.bot.structures.keyboards.dreams import DREAMS_MAIN_INLINE_MARKUP
+    
+    await message.answer(
+        profile_text,
+        reply_markup=DREAMS_MAIN_INLINE_MARKUP,
+        parse_mode="MARKDOWN"
+    )
+    
+    # Отправляем inline кнопки отдельным сообщением
+    await message.answer(
+        "🔧 **Дополнительные возможности:**",
+        reply_markup=ADDITIONAL_FEATURES_MARKUP,
+        parse_mode="MARKDOWN"
+    )
